@@ -1,9 +1,10 @@
 *.gem
 *.rbc
-.env
 .bundle
 .config
 .yardoc
+.env
+Gemfile.lock
 InstalledFiles
 _yardoc
 coverage

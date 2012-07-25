@@ -1,18 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
-gem 'rake'
-gem 'puma'
-gem 'sinatra'
-
-group :development do
-  gem 'foreman'
-  gem 'guard'
-  gem 'guard-rspec'
-  gem 'pry'
-  gem 'heroku'
-end
-
-group :development, :test do
-  gem 'shotgun'
-  gem 'rspec'
-end
+# Specify your gem's dependencies in dank.gemspec
+gemspec
