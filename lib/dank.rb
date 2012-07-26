@@ -2,17 +2,16 @@ require 'dank/version'
 require 'redis'
 
 REDIS = Redis.new
-WORDS= 'words'
 
 module Dank
-  def self.suggest_word(prefix, count = 5)
+  def self.suggest(prefix, count = 5)
     results = []
     rangelen = 100
-    start = REDIS.zrank(WORDS,prefix)
+    start = REDIS.zrank(:tags,prefix)
     return [] if !start
 
     while results.length != count
-      range = REDIS.zrange(WORDS,start,start+rangelen-1)
+      range = REDIS.zrange(:tags,start,start+rangelen-1)
       start += rangelen
       break if !range or range.length == 0
       range.each {|entry|
@@ -29,12 +28,12 @@ module Dank
     return results
   end
 
-  def self.add_word(word)
-    word.strip!
-    (1..(word.length)).each do |l|
-        prefix = word[0...l]
-        REDIS.zadd(WORDS,0,prefix)
+  def self.add(tag)
+    tag.strip!
+    (1..(tag.length)).each do |l|
+        prefix = tag[0...l]
+        REDIS.zadd(:tags,0,prefix)
     end
-    REDIS.zadd(WORDS,0,word+"+")
+    REDIS.zadd(:tags,0,tag+"+")
   end
 end
