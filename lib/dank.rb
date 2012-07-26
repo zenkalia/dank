@@ -4,6 +4,42 @@ require 'redis'
 REDIS = Redis.new
 
 module Dank
+  class Tags
+    include Enumerable
+
+    def initialize(o)
+      @setkey ||= "user#{o.id}"
+      @tags_array = REDIS.zrange(@setkey,0,-1)
+    end
+
+    def add(tag)
+      Dank.add(tag)
+      REDIS.zadd(@setkey,REDIS.zcard(@setkey),tag)
+      @tags_array = REDIS.zrange(@setkey,0,-1)
+    end
+
+    def get_array
+      @tags_array
+    end
+
+    def each
+      @tags_array.each do
+        yield
+      end
+    end
+  end
+
+  module Taggable
+    def tags
+      @tags ||= Dank::Tags.new(self)
+      @tags.get_array
+    end
+
+    def add_tag tag
+      @tags.add(tag)
+    end
+  end
+
   def self.suggest(prefix, count = 5)
     results = []
     rangelen = 100
@@ -20,7 +56,7 @@ module Dank
           count = results.count
           break
         end
-        if entry[-1..-1] == "+" and results.length != count
+        if entry[-1] == "+" and results.length != count
           results << entry[0...-1]
         end
       }
@@ -30,9 +66,9 @@ module Dank
 
   def self.add(tag)
     tag.strip!
-    (1..(tag.length)).each do |l|
-        prefix = tag[0...l]
-        REDIS.zadd(:tags,0,prefix)
+    tag.length.downto(1).each do |l|
+      prefix = tag[0...l]
+      break unless REDIS.zadd(:tags,0,prefix)
     end
     REDIS.zadd(:tags,0,tag+"+")
   end
