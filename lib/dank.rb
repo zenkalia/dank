@@ -21,12 +21,6 @@ module Dank
     def get_array
       @tags_array
     end
-
-    def each
-      @tags_array.each do
-        yield
-      end
-    end
   end
 
   module Taggable
