@@ -1,25 +1,27 @@
 require 'dank/version'
 require 'redis'
 
-REDIS = Redis.new
-
 module Dank
   class Tags
     include Enumerable
 
     def initialize(o)
       @setkey ||= "user#{o.id}"
-      @tags_array = REDIS.zrange(@setkey,0,-1)
+      @tags_array = redis.zrange(@setkey,0,-1)
     end
 
     def add(tag)
       Dank.add(tag)
-      REDIS.zadd(@setkey,REDIS.zcard(@setkey),tag)
-      @tags_array = REDIS.zrange(@setkey,0,-1)
+      redis.zadd(@setkey,redis.zcard(@setkey),tag)
+      @tags_array = redis.zrange(@setkey,0,-1)
     end
 
     def get_array
       @tags_array
+    end
+
+    def redis
+      @redis ||= Dank.redis
     end
   end
 
@@ -29,19 +31,23 @@ module Dank
       @tags.get_array
     end
 
-    def add_tag tag
-      @tags.add(tag)
+    def add_tag(tag)
+      @tags.add tag
     end
+  end
+
+  def self.redis
+    @redis ||= Redis.new
   end
 
   def self.suggest(prefix, count = 5)
     results = []
     rangelen = 100
-    start = REDIS.zrank(:tags,prefix)
+    start = redis.zrank(:tags,prefix)
     return [] if !start
 
     while results.length != count
-      range = REDIS.zrange(:tags,start,start+rangelen-1)
+      range = redis.zrange(:tags,start,start+rangelen-1)
       start += rangelen
       break if !range or range.length == 0
       range.each {|entry|
@@ -62,8 +68,8 @@ module Dank
     tag.strip!
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
-      break unless REDIS.zadd(:tags,0,prefix)
+      break unless redis.zadd(:tags,0,prefix)
     end
-    REDIS.zadd(:tags,0,tag+"+")
+    redis.zadd(:tags,0,tag+"+")
   end
 end
