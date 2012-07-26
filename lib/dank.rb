@@ -13,7 +13,7 @@ module Dank
     def add(tag)
       tag = Dank.sanitize tag
       Dank.add(tag)
-      redis.zadd(@setkey,redis.zcard(@setkey),tag)
+      redis.zadd(@setkey,redis.zcard(@setkey)+1,tag)
       @tags_array = redis.zrange(@setkey,0,-1)
     end
 
@@ -25,6 +25,15 @@ module Dank
 
     def get_array
       @tags_array
+    end
+
+    def reorder(tags)
+      count = 1
+      tags.each do |tag|
+        redis.zadd(@setkey,count,tag)
+        count+=1
+      end
+      @tags_array = redis.zrange(@setkey,0,-1)
     end
 
     def redis
@@ -44,6 +53,10 @@ module Dank
 
     def remove_tag(tag)
       @tags.remove tag
+    end
+
+    def reorder(tags)
+      @tags.reorder(tags)
     end
   end
 
