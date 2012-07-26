@@ -11,8 +11,15 @@ module Dank
     end
 
     def add(tag)
+      tag = Dank.sanitize tag
       Dank.add(tag)
       redis.zadd(@setkey,redis.zcard(@setkey),tag)
+      @tags_array = redis.zrange(@setkey,0,-1)
+    end
+
+    def remove(tag)
+      tag = Dank.sanitize tag
+      redis.zrem(@setkey,tag)
       @tags_array = redis.zrange(@setkey,0,-1)
     end
 
@@ -34,13 +41,22 @@ module Dank
     def add_tag(tag)
       @tags.add tag
     end
+
+    def remove_tag(tag)
+      @tags.remove tag
+    end
   end
 
   def self.redis
     @redis ||= Redis.new
   end
 
+  def self.sanitize(s)
+    s.squeeze('  ').strip.downcase
+  end
+
   def self.suggest(prefix, count = 5)
+    prefix = sanitize prefix
     results = []
     rangelen = 100
     start = redis.zrank(:tags,prefix)
@@ -65,6 +81,7 @@ module Dank
   end
 
   def self.add(tag)
+    tag = sanitize tag
     tag.strip!
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
