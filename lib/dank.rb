@@ -17,28 +17,18 @@ module Dank
     def add(tag)
       tag = Dank.sanitize tag
       Dank.add(tag)
-      redis.zadd(@setkey,redis.zcard(@setkey)+1,tag)
-      add_reverse tag
+      dank_add taggable_name, @id, tag
+      dank_add 'tags', tag, @id
       update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
-    end
-
-    def add_reverse(tag)
-      key = "#{Dank.app_name}:tags:#{tag}"
-      redis.zadd(key, redis.zcard(key)+1, @id)
     end
 
     def remove(tag)
       tag = Dank.sanitize tag
-      redis.zrem(@setkey,tag)
-      remove_reverse tag
+      dank_rem taggable_name, @id, tag
+      dank_rem 'tags', tag, @id
       update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
-    end
-
-    def remove_reverse(tag)
-      key = "#{Dank.app_name}:tags:#{tag}"
-      redis.zrem(key, @id)
     end
 
     def get_array
@@ -59,6 +49,24 @@ module Dank
       @redis ||= Dank.redis
     end
 
+    def get_shared(other_id)
+      both = [@id.to_s, other_id.to_s].sort
+      one = both.first
+      two = both.last
+      redis.zrange "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", 0, -1
+    end
+
+    private
+    def dank_add(receive_type, receive_id, element)
+      key = "#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      redis.zadd(key, redis.zcard(key)+1, element)
+    end
+
+    def dank_rem(receive_type, receive_id, element)
+      key = "#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      redis.zrem(key, element)
+    end
+
     def update_intersections
       keys = redis.keys "#{Dank.app_name}:#{taggable_name}:*"
       keys.each do |key|
@@ -68,13 +76,6 @@ module Dank
         two = both.last
         redis.zinterstore "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", ["#{Dank.app_name}:#{taggable_name}:#{one}", "#{Dank.app_name}:#{taggable_name}:#{two}"]
       end
-    end
-
-    def get_shared(other_id)
-      both = [@id.to_s, other_id.to_s].sort
-      one = both.first
-      two = both.last
-      redis.zrange "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", 0, -1
     end
   end
 
