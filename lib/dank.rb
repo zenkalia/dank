@@ -31,13 +31,14 @@ module Dank
     def remove(tag)
       tag = Dank.sanitize tag
       redis.zrem(@setkey,tag)
+      remove_reverse tag
       update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
     end
 
     def remove_reverse(tag)
       key = "#{Dank.app_name}:tags:#{tag}"
-      redis.zrem(key, redis.zcard(key)+1, @id)
+      redis.zrem(key, @id)
     end
 
     def get_array
