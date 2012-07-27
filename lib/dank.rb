@@ -83,10 +83,6 @@ module Dank
       tag_lib.get_array
     end
 
-    def tag_lib
-      @tag_lib ||= Dank::Tags.new(self)
-    end
-
     def add_tag(tag)
       tag_lib.add tag
     end
@@ -101,6 +97,10 @@ module Dank
 
     def get_shared(other_id)
       tag_lib.get_shared other_id
+    end
+    private
+    def tag_lib
+      @tag_lib ||= Dank::Tags.new(self)
     end
   end
 
