@@ -2,6 +2,8 @@
 
 A Redis-backed gem for making a tag cloud thingie!
 
+Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-with-redis.html>
+
 
 ## TODO list
 

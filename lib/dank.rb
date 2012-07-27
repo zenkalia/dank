@@ -18,8 +18,14 @@ module Dank
       tag = Dank.sanitize tag
       Dank.add(tag)
       redis.zadd(@setkey,redis.zcard(@setkey)+1,tag)
+      add_reverse tag
       update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
+    end
+
+    def add_reverse(tag)
+      key = "#{Dank.app_name}:tags:#{tag}"
+      redis.zadd(key, redis.zcard(key)+1, @id)
     end
 
     def remove(tag)
@@ -27,6 +33,11 @@ module Dank
       redis.zrem(@setkey,tag)
       update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
+    end
+
+    def remove_reverse(tag)
+      key = "#{Dank.app_name}:tags:#{tag}"
+      redis.zrem(key, redis.zcard(key)+1, @id)
     end
 
     def get_array
@@ -61,20 +72,23 @@ module Dank
 
   module Taggable
     def tags
-      @tags ||= Dank::Tags.new(self)
-      @tags.get_array
+      tag_lib.get_array
+    end
+
+    def tag_lib
+      @tag_lib ||= Dank::Tags.new(self)
     end
 
     def add_tag(tag)
-      @tags.add tag
+      tag_lib.add tag
     end
 
     def remove_tag(tag)
-      @tags.remove tag
+      tag_lib.remove tag
     end
 
     def reorder(tags)
-      @tags.reorder(tags)
+      tag_lib.reorder(tags)
     end
   end
 
