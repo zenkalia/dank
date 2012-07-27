@@ -98,6 +98,10 @@ module Dank
     def get_shared(other_id)
       tag_lib.get_shared other_id
     end
+
+    def suggest(prefix)
+      Dank.suggest prefix
+    end
     private
     def tag_lib
       @tag_lib ||= Dank::Tags.new(self)
@@ -113,7 +117,7 @@ module Dank
   end
 
   def self.redis
-    @redis ||= Redis.new
+    @redis ||= Redis.current
   end
 
   def self.sanitize(s)

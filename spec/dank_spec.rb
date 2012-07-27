@@ -2,7 +2,29 @@ require 'dank'
 require 'spec_helper'
 
 describe 'Dank' do
-  describe 'module functions'
+  describe 'module functions' do
+    describe 'we can add tags ' do
+      before do
+        Dank.add 'turtles'
+        Dank.add 'ninjas'
+        Dank.add 'traps'
+      end
+
+      subject{Dank.redis.zrange 'tags', 0, -1}
+
+      it do
+        subject.should == ["n", "ni", "nin", "ninj", "ninja", "ninjas", "ninjas+", "t", "tr", "tra", "trap", "traps", "traps+", "tu", "tur", "turt", "turtl", "turtle", "turtles", "turtles+"]
+      end
+
+      describe 'we can also suggest based on a prefix' do
+        subject{Dank.suggest 't'}
+
+        it do
+          subject.should == ['traps', 'turtles']
+        end
+      end
+    end
+  end
 
   describe 'mixin' do
     before do
@@ -19,11 +41,12 @@ describe 'Dank' do
       end
     end
 
+    let(:id){ 'unique' }
+    let(:other_id){ 'also_unique' }
+    let(:user){ Test.new id }
+    let(:other_user){ Test.new other_id }
+
     describe 'adding tags is cool' do
-      let(:id){ 'unique' }
-      let(:other_id){ 'also_unique' }
-      let(:user){ Test.new id }
-      let(:other_user){ Test.new other_id }
       before do
         user.add_tag 'whatever'
         user.add_tag 'cheese'
@@ -93,10 +116,8 @@ describe 'Dank' do
 
         specify { lambda { subject }.should change { user.tags } }
         specify { lambda { subject }.should_not change { user.tags.count } }
-
       end
     end
-
   end
 end
 
