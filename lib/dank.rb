@@ -1,16 +1,17 @@
 require 'dank/version'
 require 'redis'
 
-GETS_TAGS = 'user'
-
 module Dank
   class Tags
-    include Enumerable
-
     def initialize(o)
       @id ||= o.id
-      @setkey ||= "#{Dank.app_name}:#{GETS_TAGS}:#{@id}"
+      @taggable_name = Dank.sanitize o.class.to_s
+      @setkey ||= "#{Dank.app_name}:#{taggable_name}:#{@id}"
       @tags_array = redis.zrange(@setkey,0,-1)
+    end
+
+    def taggable_name
+      @taggable_name ||= Dank.sanitize o.class.to_s
     end
 
     def add(tag)
@@ -47,13 +48,13 @@ module Dank
     end
 
     def update_intersections
-      keys = redis.keys "#{Dank.app_name}:#{GETS_TAGS}:*"
+      keys = redis.keys "#{Dank.app_name}:#{taggable_name}:*"
       keys.each do |key|
         other_id = key.split(':').last
         both = [@id.to_s, other_id.to_s].sort
         one = both.first
         two = both.last
-        redis.zinterstore "#{Dank.app_name}:intersection:#{GETS_TAGS}:#{one}:#{two}", ["#{Dank.app_name}:#{GETS_TAGS}:#{one}", "#{Dank.app_name}:#{GETS_TAGS}:#{two}"]
+        redis.zinterstore "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", ["#{Dank.app_name}:#{taggable_name}:#{one}", "#{Dank.app_name}:#{taggable_name}:#{two}"]
       end
     end
   end
