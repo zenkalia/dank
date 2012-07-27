@@ -27,17 +27,20 @@ describe 'Dank' do
       before do
         user.add_tag 'whatever'
         user.add_tag 'cheese'
+        user.add_tag 'dinosaurs'
+        user.add_tag 'dinosaur eggs'
+        user.add_tag 'abe lincoln'
       end
 
       subject{user.tags}
 
-      its(:count){should == 2}
+      its(:count){should == 5}
 
       describe 'repeated tags go nowhere' do
         before do
           user.add_tag 'whatever'
         end
-        its(:count){should == 2}
+        its(:count){should == 5}
       end
 
       describe 'with multiple users, we can read who shared a tag' do
@@ -51,7 +54,7 @@ describe 'Dank' do
         before do
           user.remove_tag 'cheese'
         end
-        its(:count){should == 1}
+        its(:count){should == 4}
 
         describe 'with multiple users, we can read who shared a tag' do
           before do
@@ -76,6 +79,21 @@ describe 'Dank' do
           end
           it {subject.should =~ ['derek']}
         end
+      end
+
+      describe 'we can reorder tags too' do
+        let(:shuffled_tags){user.tags.shuffle}
+        subject do
+          old_tags = user.tags
+          user.reorder(shuffled_tags)
+          while old_tags == user.tags do
+            user.reorder(shuffled_tags)
+          end
+        end
+
+        specify { lambda { subject }.should change { user.tags } }
+        specify { lambda { subject }.should_not change { user.tags.count } }
+
       end
     end
 
