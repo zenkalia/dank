@@ -60,6 +60,23 @@ describe 'Dank' do
           it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [other_id] }
         end
       end
+      describe 'we know the intersection of the tag sets on two users' do
+        before do
+          other_user.add_tag 'cheese'
+          other_user.add_tag 'jesus'
+        end
+        subject{user.get_shared(other_id)}
+        it {subject.should =~ ['cheese']}
+
+        describe 'it even gets updated on tag removal' do
+          before do
+            user.add_tag 'derek'
+            other_user.add_tag 'derek'
+            other_user.remove_tag 'cheese'
+          end
+          it {subject.should =~ ['derek']}
+        end
+      end
     end
 
   end

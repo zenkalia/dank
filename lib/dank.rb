@@ -69,6 +69,13 @@ module Dank
         redis.zinterstore "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", ["#{Dank.app_name}:#{taggable_name}:#{one}", "#{Dank.app_name}:#{taggable_name}:#{two}"]
       end
     end
+
+    def get_shared(other_id)
+      both = [@id.to_s, other_id.to_s].sort
+      one = both.first
+      two = both.last
+      redis.zrange "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", 0, -1
+    end
   end
 
   module Taggable
@@ -90,6 +97,10 @@ module Dank
 
     def reorder(tags)
       tag_lib.reorder(tags)
+    end
+
+    def get_shared(other_id)
+      tag_lib.get_shared other_id
     end
   end
 
