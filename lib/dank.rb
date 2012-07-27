@@ -1,12 +1,16 @@
 require 'dank/version'
 require 'redis'
 
+APP_NAME = 'hate'
+GETS_TAGS = 'user'
+
 module Dank
   class Tags
     include Enumerable
 
     def initialize(o)
-      @setkey ||= "user#{o.id}"
+      @id ||= o.id
+      @setkey ||= "#{APP_NAME}:#{GETS_TAGS}:#{@id}"
       @tags_array = redis.zrange(@setkey,0,-1)
     end
 
@@ -15,12 +19,14 @@ module Dank
       Dank.add(tag)
       redis.zadd(@setkey,redis.zcard(@setkey)+1,tag)
       @tags_array = redis.zrange(@setkey,0,-1)
+      Dank.update_intersections(@id)
     end
 
     def remove(tag)
       tag = Dank.sanitize tag
       redis.zrem(@setkey,tag)
       @tags_array = redis.zrange(@setkey,0,-1)
+      Dank.update_intersections(@id)
     end
 
     def get_array
@@ -34,6 +40,7 @@ module Dank
         count+=1
       end
       @tags_array = redis.zrange(@setkey,0,-1)
+      Dank.update_intersections(@id)
     end
 
     def redis
@@ -91,6 +98,17 @@ module Dank
       }
     end
     return results
+  end
+
+  def self.update_intersections(id)
+    keys = redis.keys "#{APP_NAME}:#{GETS_TAGS}:*"
+    keys.each do |key|
+      other_id = key.split(':').last
+      both = [id.to_s, other_id.to_s].sort
+      one = both.first
+      two = both.last
+      redis.zinterstore "#{APP_NAME}:distance:#{GETS_TAGS}:#{one}:#{two}", ["#{APP_NAME}:#{GETS_TAGS}:#{one}", "#{APP_NAME}:#{GETS_TAGS}:#{two}"]
+    end
   end
 
   def self.add(tag)
