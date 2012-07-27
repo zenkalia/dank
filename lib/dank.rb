@@ -1,7 +1,6 @@
 require 'dank/version'
 require 'redis'
 
-APP_NAME = 'hate'
 GETS_TAGS = 'user'
 
 module Dank
@@ -10,7 +9,7 @@ module Dank
 
     def initialize(o)
       @id ||= o.id
-      @setkey ||= "#{APP_NAME}:#{GETS_TAGS}:#{@id}"
+      @setkey ||= "#{Dank.app_name}:#{GETS_TAGS}:#{@id}"
       @tags_array = redis.zrange(@setkey,0,-1)
     end
 
@@ -18,15 +17,15 @@ module Dank
       tag = Dank.sanitize tag
       Dank.add(tag)
       redis.zadd(@setkey,redis.zcard(@setkey)+1,tag)
+      update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
-      Dank.update_intersections(@id)
     end
 
     def remove(tag)
       tag = Dank.sanitize tag
       redis.zrem(@setkey,tag)
+      update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
-      Dank.update_intersections(@id)
     end
 
     def get_array
@@ -39,12 +38,23 @@ module Dank
         redis.zadd(@setkey,count,tag)
         count+=1
       end
+      update_intersections
       @tags_array = redis.zrange(@setkey,0,-1)
-      Dank.update_intersections(@id)
     end
 
     def redis
       @redis ||= Dank.redis
+    end
+
+    def update_intersections
+      keys = redis.keys "#{Dank.app_name}:#{GETS_TAGS}:*"
+      keys.each do |key|
+        other_id = key.split(':').last
+        both = [@id.to_s, other_id.to_s].sort
+        one = both.first
+        two = both.last
+        redis.zinterstore "#{Dank.app_name}:intersection:#{GETS_TAGS}:#{one}:#{two}", ["#{Dank.app_name}:#{GETS_TAGS}:#{one}", "#{Dank.app_name}:#{GETS_TAGS}:#{two}"]
+      end
     end
   end
 
@@ -65,6 +75,14 @@ module Dank
     def reorder(tags)
       @tags.reorder(tags)
     end
+  end
+
+  def self.config config
+    @app_name = config[:app_name]
+  end
+
+  def self.app_name
+    @app_name || 'hate'
   end
 
   def self.redis
@@ -98,17 +116,6 @@ module Dank
       }
     end
     return results
-  end
-
-  def self.update_intersections(id)
-    keys = redis.keys "#{APP_NAME}:#{GETS_TAGS}:*"
-    keys.each do |key|
-      other_id = key.split(':').last
-      both = [id.to_s, other_id.to_s].sort
-      one = both.first
-      two = both.last
-      redis.zinterstore "#{APP_NAME}:distance:#{GETS_TAGS}:#{one}:#{two}", ["#{APP_NAME}:#{GETS_TAGS}:#{one}", "#{APP_NAME}:#{GETS_TAGS}:#{two}"]
-    end
   end
 
   def self.add(tag)
