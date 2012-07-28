@@ -36,6 +36,7 @@ module Dank
     end
 
     def reorder(tags)
+      return false unless tags.sort == get_array.sort
       count = 1
       tags.each do |tag|
         redis.zadd(@setkey,count,tag)

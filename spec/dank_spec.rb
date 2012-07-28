@@ -105,17 +105,25 @@ describe 'Dank' do
       end
 
       describe 'we can reorder tags too' do
-        let(:shuffled_tags){user.tags.shuffle}
-        subject do
-          old_tags = user.tags
-          user.reorder(shuffled_tags)
-          while old_tags == user.tags do
-            user.reorder(shuffled_tags)
+        let(:shuffled_tags) do
+          ret = user.tags.shuffle
+          while ret == user.tags do
+            ret = user.tags.shuffle
           end
+          ret
+        end
+        subject do
+          user.reorder(shuffled_tags)
         end
 
         specify { lambda { subject }.should change { user.tags } }
         specify { lambda { subject }.should_not change { user.tags.count } }
+
+        describe 'but we fail if you forget a tag' do
+          let(:shuffled_tags){user.tags[1,user.tags.count-1]}
+          specify { lambda { subject }.should_not change { user.tags } }
+          #specify { lambda { subject }.should_not change { user.tags.count } }
+        end
       end
     end
   end
