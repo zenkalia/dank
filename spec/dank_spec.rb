@@ -27,102 +27,127 @@ describe 'Dank' do
   end
 
   describe 'mixin' do
-    before do
-      class Test
-        include Dank::Taggable
-
-        def initialize (id)
-          @id = id
+    describe 'does nothing without a .id' do
+      before do
+        class Test
+          include Dank::Taggable
+          def id
+            nil
+          end
         end
+      end
 
-        def id
-          @id
-        end
+      let(:user){ Test.new }
+
+      describe 'adding tags returns false' do
+        subject { user.add_tag 'cheese' }
+        it { should == false }
+        specify { lambda { subject }.should_not change { Dank.redis.zrange 'tags', 0, -1 } }
+      end
+      describe 'removing tags returns false' do
+        subject { user.remove_tag 'cheese' }
+        it { should == false }
+        specify { lambda { subject }.should_not change { Dank.redis.zrange 'tags', 0, -1 } }
       end
     end
-
-    let(:id){ 'unique' }
-    let(:other_id){ 'also_unique' }
-    let(:user){ Test.new id }
-    let(:other_user){ Test.new other_id }
-
-    describe 'adding tags is cool' do
+    describe 'does good things with a .id' do
       before do
-        user.add_tag 'whatever'
-        user.add_tag 'cheese'
-        user.add_tag 'dinosaurs'
-        user.add_tag 'dinosaur eggs'
-        user.add_tag 'abe lincoln'
+        class Test
+          include Dank::Taggable
+
+          def initialize (id)
+            @id = id
+          end
+
+          def id
+            @id
+          end
+        end
       end
 
-      subject{user.tags}
+      let(:id){ 'unique' }
+      let(:other_id){ 'also_unique' }
+      let(:user){ Test.new id }
+      let(:other_user){ Test.new other_id }
 
-      its(:count){should == 5}
-
-      describe 'repeated tags go nowhere' do
+      describe 'adding tags is cool' do
         before do
           user.add_tag 'whatever'
+          user.add_tag 'cheese'
+          user.add_tag 'dinosaurs'
+          user.add_tag 'dinosaur eggs'
+          user.add_tag 'abe lincoln'
         end
+
+        subject{user.tags}
+
         its(:count){should == 5}
-      end
 
-      describe 'with multiple users, we can read who shared a tag' do
-        before do
-          other_user.add_tag 'cheese'
+        describe 'repeated tags go nowhere' do
+          before do
+            user.add_tag 'whatever'
+          end
+          its(:count){should == 5}
         end
-        it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [id, other_id] }
-      end
-
-      describe 'we can remove them too' do
-        before do
-          user.remove_tag 'cheese'
-        end
-        its(:count){should == 4}
 
         describe 'with multiple users, we can read who shared a tag' do
           before do
             other_user.add_tag 'cheese'
           end
-          it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [other_id] }
+          it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [id, other_id] }
         end
-      end
-      describe 'we know the intersection of the tag sets on two users' do
-        before do
-          other_user.add_tag 'cheese'
-          other_user.add_tag 'jesus'
-        end
-        subject{user.get_shared(other_id)}
-        it {subject.should =~ ['cheese']}
 
-        describe 'it even gets updated on tag removal' do
+        describe 'we can remove them too' do
           before do
-            user.add_tag 'derek'
-            other_user.add_tag 'derek'
-            other_user.remove_tag 'cheese'
+            user.remove_tag 'cheese'
           end
-          it {subject.should =~ ['derek']}
-        end
-      end
+          its(:count){should == 4}
 
-      describe 'we can reorder tags too' do
-        let(:shuffled_tags) do
-          ret = user.tags.shuffle
-          while ret == user.tags do
+          describe 'with multiple users, we can read who shared a tag' do
+            before do
+              other_user.add_tag 'cheese'
+            end
+            it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [other_id] }
+          end
+        end
+        describe 'we know the intersection of the tag sets on two users' do
+          before do
+            other_user.add_tag 'cheese'
+            other_user.add_tag 'jesus'
+          end
+          subject{user.get_shared(other_id)}
+          it {subject.should =~ ['cheese']}
+
+          describe 'it even gets updated on tag removal' do
+            before do
+              user.add_tag 'derek'
+              other_user.add_tag 'derek'
+              other_user.remove_tag 'cheese'
+            end
+            it {subject.should =~ ['derek']}
+          end
+        end
+
+        describe 'we can reorder tags too' do
+          let(:shuffled_tags) do
             ret = user.tags.shuffle
+            while ret == user.tags do
+              ret = user.tags.shuffle
+            end
+            ret
           end
-          ret
-        end
-        subject do
-          user.reorder(shuffled_tags)
-        end
+          subject do
+            user.reorder(shuffled_tags)
+          end
 
-        specify { lambda { subject }.should change { user.tags } }
-        specify { lambda { subject }.should_not change { user.tags.count } }
+          specify { lambda { subject }.should change { user.tags } }
+          specify { lambda { subject }.should_not change { user.tags.count } }
 
-        describe 'but we fail if you forget a tag' do
-          let(:shuffled_tags){user.tags[1,user.tags.count-1]}
-          specify { lambda { subject }.should_not change { user.tags } }
-          #specify { lambda { subject }.should_not change { user.tags.count } }
+          describe 'but we fail if you forget a tag' do
+            let(:shuffled_tags){user.tags[1,user.tags.count-1]}
+            specify { lambda { subject }.should_not change { user.tags } }
+            #specify { lambda { subject }.should_not change { user.tags.count } }
+          end
         end
       end
     end

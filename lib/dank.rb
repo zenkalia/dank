@@ -4,10 +4,9 @@ require 'redis'
 module Dank
   class Tags
     def initialize(o)
-      @id ||= o.id
+      @objekt = o
       @taggable_name = Dank.sanitize o.class.to_s
-      @setkey ||= "#{Dank.app_name}:#{taggable_name}:#{@id}"
-      @tags_array = redis.zrange(@setkey,0,-1)
+      get_array
     end
 
     def taggable_name
@@ -15,35 +14,38 @@ module Dank
     end
 
     def add(tag)
+      return false unless @objekt.id
       tag = Dank.sanitize tag
       Dank.add(tag)
-      dank_add taggable_name, @id, tag
-      dank_add 'tags', tag, @id
+      dank_add taggable_name, @objekt.id, tag
+      dank_add 'tags', tag, @objekt.id
       update_intersections
-      @tags_array = redis.zrange(@setkey,0,-1)
+      get_array
     end
 
     def remove(tag)
+      return false unless @objekt.id
       tag = Dank.sanitize tag
-      dank_rem taggable_name, @id, tag
-      dank_rem 'tags', tag, @id
+      dank_rem taggable_name, @objekt.id, tag
+      dank_rem 'tags', tag, @objekt.id
       update_intersections
-      @tags_array = redis.zrange(@setkey,0,-1)
+      get_array
     end
 
     def get_array
-      @tags_array
+      return [] unless @objekt.id
+      redis.zrange("#{Dank.app_name}:#{taggable_name}:#{@objekt.id}",0,-1)
     end
 
     def reorder(tags)
       return false unless tags.sort == get_array.sort
       count = 1
       tags.each do |tag|
-        redis.zadd(@setkey,count,tag)
+        redis.zadd("#{Dank.app_name}:#{taggable_name}:#{@objekt.id}",count,tag)
         count+=1
       end
       update_intersections
-      @tags_array = redis.zrange(@setkey,0,-1)
+      get_array
     end
 
     def redis
@@ -51,7 +53,7 @@ module Dank
     end
 
     def get_shared(other_id)
-      both = [@id.to_s, other_id.to_s].sort
+      both = [@objekt.id.to_s, other_id.to_s].sort
       one = both.first
       two = both.last
       redis.zrange "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", 0, -1
@@ -72,7 +74,7 @@ module Dank
       keys = redis.keys "#{Dank.app_name}:#{taggable_name}:*"
       keys.each do |key|
         other_id = key.split(':').last
-        both = [@id.to_s, other_id.to_s].sort
+        both = [@objekt.id.to_s, other_id.to_s].sort
         one = both.first
         two = both.last
         redis.zinterstore "#{Dank.app_name}:intersection:#{taggable_name}:#{one}:#{two}", ["#{Dank.app_name}:#{taggable_name}:#{one}", "#{Dank.app_name}:#{taggable_name}:#{two}"]
