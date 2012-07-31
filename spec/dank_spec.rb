@@ -17,7 +17,7 @@ describe 'Dank' do
       end
 
       describe 'we can also suggest based on a prefix' do
-        subject{Dank.suggest 't'}
+        subject{Dank.suggest_tags 't'}
 
         it do
           subject.should == ['traps', 'turtles']
@@ -137,7 +137,7 @@ describe 'Dank' do
             ret
           end
           subject do
-            user.reorder(shuffled_tags)
+            user.reorder_tags(shuffled_tags)
           end
 
           specify { lambda { subject }.should change { user.tags } }

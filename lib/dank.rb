@@ -92,7 +92,7 @@ module Dank
       tag_lib.remove tag
     end
 
-    def reorder(tags)
+    def reorder_tags(tags)
       tag_lib.reorder(tags)
     end
 
@@ -100,8 +100,8 @@ module Dank
       tag_lib.get_shared other_id
     end
 
-    def suggest(prefix)
-      Dank.suggest prefix
+    def suggest_tags(prefix)
+      Dank.suggest_tags prefix
     end
     private
     def tag_lib
@@ -125,7 +125,7 @@ module Dank
     s.squeeze('  ').strip.downcase
   end
 
-  def self.suggest(prefix, count = 5)
+  def self.suggest_tags(prefix, count = 5)
     prefix = sanitize prefix
     results = []
     rangelen = 100
