@@ -23,7 +23,19 @@ describe 'Dank' do
           subject.should == ['traps', 'turtles']
         end
       end
+
+      describe 'we can remove tags too' do
+        before do
+          Dank.remove 'traps'
+        end
+
+        subject{Dank.redis.zrange 'tags', 0, -1}
+        it do
+          subject.should == ["n", "ni", "nin", "ninj", "ninja", "ninjas", "ninjas+", "t", "tu", "tur", "turt", "turtl", "turtle", "turtles", "turtles+"]
+        end
+      end
     end
+
   end
 
   describe 'mixin' do

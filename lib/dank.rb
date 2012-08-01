@@ -152,11 +152,20 @@ module Dank
 
   def self.add(tag)
     tag = sanitize tag
-    tag.strip!
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
       break unless redis.zadd(:tags,0,prefix)
     end
     redis.zadd(:tags,0,tag+"+")
+  end
+
+  def self.remove(tag)
+    tag = sanitize tag
+    redis.zrem :tags, "#{tag}+"
+    tag.length.downto(1).each do |l|
+      prefix = tag[0...l]
+      break if suggest_tags(prefix).count > 0
+      redis.zrem :tags, prefix
+    end
   end
 end
