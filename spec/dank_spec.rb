@@ -94,6 +94,7 @@ describe 'Dank' do
         subject{user.tags}
 
         its(:count){should == 5}
+        it { Dank.suggest_tags('che').should == ['cheese'] }
 
         describe 'repeated tags go nowhere' do
           before do
@@ -107,6 +108,13 @@ describe 'Dank' do
             other_user.add_tag 'cheese'
           end
           it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [id, other_id] }
+
+          describe 'and it stays in the shared tags if only one user has it removed' do
+            before do
+              other_user.remove_tag 'cheese'
+            end
+            it { Dank.suggest_tags('che').should == ['cheese'] }
+          end
         end
 
         describe 'we can remove them too' do
@@ -114,6 +122,10 @@ describe 'Dank' do
             user.remove_tag 'cheese'
           end
           its(:count){should == 4}
+
+          describe 'and the global tag set gets cleaned up when no one has a tag' do
+            it { Dank.suggest_tags('che').should == [] }
+          end
 
           describe 'with multiple users, we can read who shared a tag' do
             before do

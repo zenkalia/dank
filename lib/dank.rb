@@ -24,6 +24,9 @@ module Dank
       tag = Dank.sanitize tag
       dank_rem @taggable_name, @objekt.id, tag
       dank_rem 'tags', tag, @objekt.id
+      if redis.zrange("#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
+        Dank.remove tag
+      end
       update_intersections
       get_array
     end
