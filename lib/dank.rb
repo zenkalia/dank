@@ -83,28 +83,42 @@ module Dank
   end
 
   module Taggable
-    def tags
-      tag_lib.get_array
+    module ClassMethods
+      def tag_name(name)
+        # #{name}s
+        # add_#{name}
+        # remove_#{name}
+        # reorder_#{name}s
+        # shared_#{name}s
+        # suggest_#{name}s
+        define_method :"#{name}s" do
+          tag_lib.get_array
+        end
+
+        define_method :"add_#{name}" do |tag|
+          tag_lib.add tag
+        end
+
+        define_method :"remove_#{name}" do |tag|
+          tag_lib.remove tag
+        end
+
+        define_method :"reorder_#{name}s" do |tags|
+          tag_lib.reorder(tags)
+        end
+
+        define_method :"shared_#{name}s" do |other_id|
+          tag_lib.get_shared other_id
+        end
+
+        define_method :"suggest_#{name}s" do |prefix|
+          Dank.suggest_tags prefix
+        end
+      end
     end
 
-    def add_tag(tag)
-      tag_lib.add tag
-    end
-
-    def remove_tag(tag)
-      tag_lib.remove tag
-    end
-
-    def reorder_tags(tags)
-      tag_lib.reorder(tags)
-    end
-
-    def get_shared(other_id)
-      tag_lib.get_shared other_id
-    end
-
-    def suggest_tags(prefix)
-      Dank.suggest_tags prefix
+    def self.included(base)
+      base.extend(ClassMethods)
     end
     private
     def tag_lib

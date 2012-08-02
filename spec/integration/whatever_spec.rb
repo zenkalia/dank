@@ -5,9 +5,10 @@ describe 'Dank' do
   describe 'module functions'
 
   describe 'mixin' do
-    before do
-      class Test
+    let(:klass) do
+      Class.new do
         include Dank::Taggable
+        tag_name :tag
 
         def initialize (id)
           @id = id
@@ -20,8 +21,8 @@ describe 'Dank' do
     end
 
     describe 'adding tags is cool' do
-      let(:user){ Test.new 4 }
-      let(:other_user){ Test.new 5 }
+      let(:user){ klass.new 4 }
+      let(:other_user){ klass.new 5 }
       before do
         user.add_tag 'whatever'
         user.add_tag 'cheese'
