@@ -113,6 +113,7 @@ module Dank
 
         define_singleton_method :"suggest_#{name}s" do |prefix|
           Dank.suggest_tags prefix
+          # this is going to change to be specific to the taggable that you're calling this on
         end
       end
     end
