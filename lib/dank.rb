@@ -85,6 +85,7 @@ module Dank
   module Taggable
     module ClassMethods
       def tag_name(name)
+        @__tag_name_called = true
         # #{name}s
         # add_#{name}
         # remove_#{name}
@@ -116,10 +117,21 @@ module Dank
           # this is going to change to be specific to the taggable that you're calling this on
         end
       end
+
     end
 
     def self.included(base)
       base.extend(ClassMethods)
+    end
+
+    def method_missing(meth, *args, &block)
+      super if @__tag_name_called
+      self.class.tag_name :tag
+      if self.respond_to? meth
+        self.send meth, *args, &block
+      else
+        super
+      end
     end
     private
     def tag_lib

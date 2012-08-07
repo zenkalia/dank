@@ -81,7 +81,6 @@ describe 'Dank' do
       let(:klass) do
         Class.new do
           include Dank::Taggable
-          tag_name :tag
           def id
             nil
           end
