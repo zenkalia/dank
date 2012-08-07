@@ -39,9 +39,47 @@ describe 'Dank' do
   end
 
   describe 'mixin' do
+    describe 'tag_name' do
+      let(:klass) do
+        Class.new do
+          include Dank::Taggable
+          tag_name :genre
+
+          def initialize (id)
+            @id = id
+          end
+
+          def id
+            @id
+          end
+        end
+      end
+
+      describe 'method names' do
+        let(:user) { klass.new 1 }
+        let(:other_user) { klass.new 2 }
+        it "works properly" do
+          user.add_genre 'pop'
+          user.add_genre 'rock'
+          user.genres.should =~ ['pop', 'rock']
+          user.remove_genre 'pop'
+          user.genres.should =~ ['rock']
+          user.add_genre 'rap'
+          user.add_genre 'rnb'
+          user.add_genre 'country'
+          klass.suggest_genres('r').should =~ ['rock','rap','rnb']
+
+          other_user = klass.new 2
+          other_user.add_genre 'rap'
+          user.shared_genres(other_user.id).should =~ ['rap']
+          new_order = user.genres.shuffle
+          user.reorder_genres(new_order).should == new_order
+        end
+      end
+    end
     describe 'does nothing without a .id' do
-      before do
-        class Test
+      let(:klass) do
+        Class.new do
           include Dank::Taggable
           def id
             nil
@@ -49,7 +87,7 @@ describe 'Dank' do
         end
       end
 
-      let(:user){ Test.new }
+      let(:user){ klass.new }
 
       describe 'adding tags returns false' do
         subject { user.add_tag 'cheese' }
@@ -63,9 +101,10 @@ describe 'Dank' do
       end
     end
     describe 'does good things with a .id' do
-      before do
-        class Test
+      let(:klass) do
+        Class.new do
           include Dank::Taggable
+          tag_name :tag
 
           def initialize (id)
             @id = id
@@ -79,8 +118,8 @@ describe 'Dank' do
 
       let(:id){ 'unique' }
       let(:other_id){ 'also_unique' }
-      let(:user){ Test.new id }
-      let(:other_user){ Test.new other_id }
+      let(:user){ klass.new id }
+      let(:other_user){ klass.new other_id }
 
       describe 'adding tags is cool' do
         before do
@@ -139,7 +178,7 @@ describe 'Dank' do
             other_user.add_tag 'cheese'
             other_user.add_tag 'jesus'
           end
-          subject{user.get_shared(other_id)}
+          subject{user.shared_tags(other_id)}
           it {subject.should =~ ['cheese']}
 
           describe 'it even gets updated on tag removal' do

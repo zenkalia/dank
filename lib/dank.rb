@@ -83,28 +83,55 @@ module Dank
   end
 
   module Taggable
-    def tags
-      tag_lib.get_array
+    module ClassMethods
+      def tag_name(name)
+        @__tag_name_called = true
+        # #{name}s
+        # add_#{name}
+        # remove_#{name}
+        # reorder_#{name}s
+        # shared_#{name}s
+        # suggest_#{name}s
+        define_method :"#{name}s" do
+          tag_lib.get_array
+        end
+
+        define_method :"add_#{name}" do |tag|
+          tag_lib.add tag
+        end
+
+        define_method :"remove_#{name}" do |tag|
+          tag_lib.remove tag
+        end
+
+        define_method :"reorder_#{name}s" do |tags|
+          tag_lib.reorder(tags)
+        end
+
+        define_method :"shared_#{name}s" do |other_id|
+          tag_lib.get_shared other_id
+        end
+
+        define_singleton_method :"suggest_#{name}s" do |prefix|
+          Dank.suggest_tags prefix
+          # this is going to change to be specific to the taggable that you're calling this on
+        end
+      end
+
     end
 
-    def add_tag(tag)
-      tag_lib.add tag
+    def self.included(base)
+      base.extend(ClassMethods)
     end
 
-    def remove_tag(tag)
-      tag_lib.remove tag
-    end
-
-    def reorder_tags(tags)
-      tag_lib.reorder(tags)
-    end
-
-    def get_shared(other_id)
-      tag_lib.get_shared other_id
-    end
-
-    def suggest_tags(prefix)
-      Dank.suggest_tags prefix
+    def method_missing(meth, *args, &block)
+      super if @__tag_name_called
+      self.class.tag_name :tag
+      if self.respond_to? meth
+        self.send meth, *args, &block
+      else
+        super
+      end
     end
     private
     def tag_lib
