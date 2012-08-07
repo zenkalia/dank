@@ -24,7 +24,7 @@ module Dank
       tag = Dank.sanitize tag
       dank_rem @taggable_name, @objekt.id, tag
       dank_rem 'tags', tag, @objekt.id
-      if redis.zrange("#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
+      if redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
       update_intersections
@@ -33,7 +33,7 @@ module Dank
 
     def get_array
       return [] unless @objekt.id
-      redis.zrange("#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1)
+      redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1)
     end
 
     def reorder(tags)
@@ -41,7 +41,7 @@ module Dank
       return false unless tags.sort == get_array.sort
       count = 1
       tags.each do |tag|
-        redis.zadd("#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",count,tag)
+        redis.zadd("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",count,tag)
         count+=1
       end
       update_intersections
@@ -56,28 +56,28 @@ module Dank
       both = [@objekt.id.to_s, other_id.to_s].sort
       one = both.first
       two = both.last
-      redis.zrange "#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", 0, -1
+      redis.zrange "dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", 0, -1
     end
 
     private
     def dank_add(receive_type, receive_id, element)
-      key = "#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       redis.zadd(key, redis.zcard(key)+1, element)
     end
 
     def dank_rem(receive_type, receive_id, element)
-      key = "#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       redis.zrem(key, element)
     end
 
     def update_intersections
-      keys = redis.keys "#{Dank.app_name}:#{@taggable_name}:*"
+      keys = redis.keys "dank:#{Dank.app_name}:#{@taggable_name}:*"
       keys.each do |key|
         other_id = key.split(':').last
         both = [@objekt.id.to_s, other_id.to_s].sort
         one = both.first
         two = both.last
-        redis.zinterstore "#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", ["#{Dank.app_name}:#{@taggable_name}:#{one}", "#{Dank.app_name}:#{@taggable_name}:#{two}"]
+        redis.zinterstore "dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", ["dank:#{Dank.app_name}:#{@taggable_name}:#{one}", "dank:#{Dank.app_name}:#{@taggable_name}:#{two}"]
       end
     end
   end
@@ -159,11 +159,11 @@ module Dank
     prefix = sanitize prefix
     results = []
     rangelen = 100
-    start = redis.zrank(:tags,prefix)
+    start = redis.zrank('dank:tags',prefix)
     return [] if !start
 
     while results.length != count
-      range = redis.zrange(:tags,start,start+rangelen-1)
+      range = redis.zrange('dank:tags',start,start+rangelen-1)
       start += rangelen
       break if !range or range.length == 0
       range.each {|entry|
@@ -184,18 +184,18 @@ module Dank
     tag = sanitize tag
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
-      break unless redis.zadd(:tags,0,prefix)
+      break unless redis.zadd('dank:tags',0,prefix)
     end
-    redis.zadd(:tags,0,tag+"+")
+    redis.zadd('dank:tags',0,tag+"+")
   end
 
   def self.remove(tag)
     tag = sanitize tag
-    redis.zrem :tags, "#{tag}+"
+    redis.zrem 'dank:tags', "#{tag}+"
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
       break if suggest_tags(prefix).count > 0
-      redis.zrem :tags, prefix
+      redis.zrem 'dank:tags', prefix
     end
   end
 end

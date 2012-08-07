@@ -10,7 +10,7 @@ describe 'Dank' do
         Dank.add 'traps'
       end
 
-      subject{Dank.redis.zrange 'tags', 0, -1}
+      subject{Dank.redis.zrange 'dank:tags', 0, -1}
 
       it do
         subject.should == ["n", "ni", "nin", "ninj", "ninja", "ninjas", "ninjas+", "t", "tr", "tra", "trap", "traps", "traps+", "tu", "tur", "turt", "turtl", "turtle", "turtles", "turtles+"]
@@ -29,7 +29,7 @@ describe 'Dank' do
           Dank.remove 'traps'
         end
 
-        subject{Dank.redis.zrange 'tags', 0, -1}
+        subject{Dank.redis.zrange 'dank:tags', 0, -1}
         it do
           subject.should == ["n", "ni", "nin", "ninj", "ninja", "ninjas", "ninjas+", "t", "tu", "tur", "turt", "turtl", "turtle", "turtles", "turtles+"]
         end
@@ -92,12 +92,12 @@ describe 'Dank' do
       describe 'adding tags returns false' do
         subject { user.add_tag 'cheese' }
         it { should == false }
-        specify { lambda { subject }.should_not change { Dank.redis.zrange 'tags', 0, -1 } }
+        specify { lambda { subject }.should_not change { Dank.redis.zrange 'dank:tags', 0, -1 } }
       end
       describe 'removing tags returns false' do
         subject { user.remove_tag 'cheese' }
         it { should == false }
-        specify { lambda { subject }.should_not change { Dank.redis.zrange 'tags', 0, -1 } }
+        specify { lambda { subject }.should_not change { Dank.redis.zrange 'dank:tags', 0, -1 } }
       end
     end
     describe 'does good things with a .id' do
@@ -146,7 +146,7 @@ describe 'Dank' do
           before do
             other_user.add_tag 'cheese'
           end
-          it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [id, other_id] }
+          it { Dank.redis.zrange('dank:hate:tags:cheese', 0, -1).should =~ [id, other_id] }
 
           describe 'and it stays in the shared tags if only one user has it removed' do
             before do
@@ -170,7 +170,7 @@ describe 'Dank' do
             before do
               other_user.add_tag 'cheese'
             end
-            it { Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ [other_id] }
+            it { Dank.redis.zrange('dank:hate:tags:cheese', 0, -1).should =~ [other_id] }
           end
         end
         describe 'we know the intersection of the tag sets on two users' do
