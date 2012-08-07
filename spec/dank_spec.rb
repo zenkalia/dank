@@ -67,7 +67,7 @@ describe 'Dank' do
           user.add_genre 'rap'
           user.add_genre 'rnb'
           user.add_genre 'country'
-          user.suggest_genres('r').should =~ ['rock','rap','rnb']
+          klass.suggest_genres('r').should =~ ['rock','rap','rnb']
 
           other_user = klass.new 2
           other_user.add_genre 'rap'

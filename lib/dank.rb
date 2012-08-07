@@ -111,7 +111,7 @@ module Dank
           tag_lib.get_shared other_id
         end
 
-        define_method :"suggest_#{name}s" do |prefix|
+        define_singleton_method :"suggest_#{name}s" do |prefix|
           Dank.suggest_tags prefix
         end
       end
