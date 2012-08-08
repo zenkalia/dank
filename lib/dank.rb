@@ -74,16 +74,12 @@ module Dank
       taggables = redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1)
 
       tags.each do |t|
-        both = [tag.to_s, t.to_s].sort
-        one = both.first
-        two = both.last
+        one, two = [tag.to_s, t.to_s].sort
         redis.sadd("dank:#{Dank.app_name}:intersection:tags:#{one}:#{two}", taggable) unless one == two
       end
 
       taggables.each do |t|
-        both = [taggable.to_s, t.to_s].sort
-        one = both.first
-        two = both.last
+        one, two = [taggable.to_s, t.to_s].sort
         redis.sadd("dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", tag) unless one == two
       end
     end
@@ -93,16 +89,12 @@ module Dank
       taggables = redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1)
 
       tags.each do |t|
-        both = [tag.to_s, t.to_s].sort
-        one = both.first
-        two = both.last
+        one, two = [tag.to_s, t.to_s].sort
         redis.srem("dank:#{Dank.app_name}:intersection:tags:#{one}:#{two}", taggable) unless one == two
       end
 
       taggables.each do |t|
-        both = [taggable.to_s, t.to_s].sort
-        one = both.first
-        two = both.last
+        one, two = [taggable.to_s, t.to_s].sort
         redis.srem("dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", tag) unless one == two
       end
     end
