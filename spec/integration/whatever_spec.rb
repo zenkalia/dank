@@ -33,7 +33,7 @@ describe 'Dank' do
 
       its(:count){should == 2}
       it do
-        Dank.redis.zrange('hate:tags:cheese', 0, -1).should =~ ['4', '5']
+        Dank.redis.zrange('dank:hate:tags:cheese', 0, -1).should =~ ['4', '5']
       end
     end
 

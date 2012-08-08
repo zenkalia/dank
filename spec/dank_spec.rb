@@ -41,7 +41,7 @@ describe 'Dank' do
   describe 'mixin' do
     describe 'tag_name' do
       let(:klass) do
-        Class.new do
+        Band = Class.new do
           include Dank::Taggable
           tag_name :genre
 
