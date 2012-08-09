@@ -103,6 +103,7 @@ module Dank
   module Taggable
     module ClassMethods
       def tag_name(name)
+        return if @__tag_name_called
         @__tag_name_called = true
         # #{name}s
         # add_#{name}
@@ -143,7 +144,6 @@ module Dank
     end
 
     def method_missing(meth, *args, &block)
-      super if @__tag_name_called
       self.class.tag_name :tag
       if self.respond_to? meth
         self.send meth, *args, &block

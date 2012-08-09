@@ -74,6 +74,8 @@ describe 'Dank' do
           user.shared_genres(other_user.id).should =~ ['rap']
           new_order = user.genres.shuffle
           user.reorder_genres(new_order).should == new_order
+          lambda { user.add_tag 'sexy' }.should raise_error
+          lambda { user.add_leg 'long' }.should raise_error
         end
       end
     end
