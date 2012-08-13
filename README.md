@@ -4,6 +4,18 @@ A Redis-backed gem for making a tag cloud thingie!
 
 Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-with-redis.html>
 
+## Benchmarking?  Performance?
+```
+rake db:test_seed[users,tags,data_points]
+```
+So far, everything looks very linear with respect to database size.  The linear coefficient between your data points and your MB used changed depending on the number of collisions/intersections.
+
+For example with 32000 data points:
+
+Users 	| Tags	| MBs used	|Secs to seed
+:-----:	|:-----:|:-----:	|:-----:
+3200	|1600	|112.54		|171.66
+800		|200	|229.15		|540
 
 ## TODO list
 
@@ -13,6 +25,6 @@ Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-wit
 * ~~save intersections in unsorted sets to save space/time~~
 * calculate neighbors for each tag and taggble (when it's optional, it'll probably be Dank::Basement)
 * put usability examples in this readme (probably before the tagging meeting next week)
-* figure out some way to persist these tags in case redis blows up (put everything in postgres at the same time as redis?  asynchronously?)
+* figure out some way to persist these tags in case redis blows up (put everything in postgres at the same time as redis or use Redis.save?)
 * add function for set_tags (currently everything kind of hinges on small/iterative/incremental data inserts)
 * add function for recalculating all reverse tags, intersections, distances and neighbors from tag sets
