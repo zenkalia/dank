@@ -3,6 +3,7 @@ module Dank
     def initialize(o)
       @objekt = o
       @taggable_name = Dank.sanitize o.class.to_s
+      @tag_name = o.class.__dank_tag_name
     end
 
     def add(tag)
@@ -10,15 +11,15 @@ module Dank
       tag = Dank.sanitize tag
       Dank.add(tag)
       dank_add @taggable_name, @objekt.id, tag
-      dank_add 'tags', tag, @objekt.id
+      dank_add @tag_name, tag, @objekt.id
     end
 
     def remove(tag)
       return false unless @objekt.id
       tag = Dank.sanitize tag
       dank_rem @taggable_name, @objekt.id, tag
-      dank_rem 'tags', tag, @objekt.id
-      if redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
+      dank_rem @tag_name, tag, @objekt.id
+      if redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
     end
@@ -81,12 +82,8 @@ module Dank
       def tag_name(name)
         return if @__tag_name_called
         @__tag_name_called = true
-        # #{name}s
-        # add_#{name}
-        # remove_#{name}
-        # reorder_#{name}s
-        # shared_#{name}s
-        # suggest_#{name}s
+        @__tag_name = name
+
         define_method :"#{name}s" do
           tag_lib.get_array
         end
@@ -118,6 +115,14 @@ module Dank
         define_singleton_method :"suggest_#{name}s" do |prefix|
           Dank.suggest_tags prefix
           # this is going to change to be specific to the taggable that you're calling this on
+        end
+
+        define_singleton_method :"#{name}_distance" do |tag1, tag2|
+          tag_lib.tag_distance tag1, tag2
+        end
+
+        define_singleton_method :"__dank_tag_name" do
+          @__tag_name
         end
       end
 

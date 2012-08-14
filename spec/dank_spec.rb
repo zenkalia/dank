@@ -76,6 +76,7 @@ describe 'Dank' do
           user.reorder_genres(new_order).should == new_order
           lambda { user.add_tag 'sexy' }.should raise_error
           lambda { user.add_leg 'long' }.should raise_error
+          Dank.redis.zrange('dank:hate:genre:rnb', 0, -1).should =~ ['1']
         end
       end
     end
@@ -153,7 +154,7 @@ describe 'Dank' do
           before do
             other_user.add_tag 'cheese'
           end
-          it { Dank.redis.zrange('dank:hate:tags:cheese', 0, -1).should =~ [id, other_id] }
+          it { Dank.redis.zrange('dank:hate:tag:cheese', 0, -1).should =~ [id, other_id] }
 
           describe 'and it stays in the shared tags if only one user has it removed' do
             before do
@@ -177,7 +178,7 @@ describe 'Dank' do
             before do
               other_user.add_tag 'cheese'
             end
-            it { Dank.redis.zrange('dank:hate:tags:cheese', 0, -1).should =~ [other_id] }
+            it { Dank.redis.zrange('dank:hate:tag:cheese', 0, -1).should =~ [other_id] }
           end
         end
         describe 'we know the intersection of the tag sets on two users' do
