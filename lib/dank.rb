@@ -34,6 +34,11 @@ module Dank
       redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1)
     end
 
+    def get_hash
+      return {} unless @objekt.id
+      Hash[redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1,{withscores:true})]
+    end
+
     def reorder(tags)
       return false unless @objekt.id
       return false unless tags.sort == get_array.sort
@@ -86,6 +91,10 @@ module Dank
         # suggest_#{name}s
         define_method :"#{name}s" do
           tag_lib.get_array
+        end
+
+        define_method :"#{name}s_hash" do
+          tag_lib.get_hash
         end
 
         define_method :"add_#{name}" do |tag|

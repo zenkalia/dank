@@ -142,6 +142,11 @@ describe 'Dank' do
             user.add_tag 'whatever'
           end
           its(:count){should == 5}
+
+          describe 'but they do get reflected by score' do
+            subject{user.tags_hash}
+            its(['whatever']){should == 2}
+          end
         end
 
         describe 'with multiple users, we can read who shared a tag' do
