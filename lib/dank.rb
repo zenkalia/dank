@@ -6,7 +6,6 @@ module Dank
     def initialize(o)
       @objekt = o
       @taggable_name = Dank.sanitize o.class.to_s
-      get_array
     end
 
     def add(tag)
@@ -15,7 +14,6 @@ module Dank
       Dank.add(tag)
       dank_add @taggable_name, @objekt.id, tag
       dank_add 'tags', tag, @objekt.id
-      get_array
     end
 
     def remove(tag)
@@ -26,7 +24,6 @@ module Dank
       if redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
-      get_array
     end
 
     def get_array
@@ -41,13 +38,12 @@ module Dank
 
     def reorder(tags)
       return false unless @objekt.id
-      return false unless tags.sort == get_array.sort
+      return false unless tags.sort == get_array.sort # for making sure that we don't allow a reorder without every tag present
       count = 1
       tags.each do |tag|
         redis.zadd("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",count,tag)
         count+=1
       end
-      get_array
     end
 
     def redis

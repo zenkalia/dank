@@ -212,11 +212,24 @@ describe 'Dank' do
 
           specify { lambda { subject }.should change { user.tags } }
           specify { lambda { subject }.should_not change { user.tags.count } }
+          it do
+            subject
+            user.tags.should == shuffled_tags
+          end
 
           describe 'but we fail if you forget a tag' do
-            let(:shuffled_tags){user.tags[1,user.tags.count-1]}
+            let(:lose_a_tag){shuffled_tags[1,shuffled_tags.count-1]}
+
+            subject do
+              user.reorder_tags(lose_a_tag)
+            end
+
             specify { lambda { subject }.should_not change { user.tags } }
-            #specify { lambda { subject }.should_not change { user.tags.count } }
+            specify { lambda { subject }.should_not change { user.tags.count } }
+            it do
+              subject
+              user.tags.should_not == lose_a_tag
+            end
           end
         end
       end
