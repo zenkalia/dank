@@ -195,6 +195,24 @@ describe 'Dank' do
               other_user.remove_tag 'cheese'
             end
             it {subject.should =~ ['derek']}
+
+            describe 'and the intersection does not freak out with an empty set' do
+              before do
+                other_user.remove_tag 'derek'
+              end
+              subject{user.get_distance(other_id)}
+              it do
+                subject.should == 0
+              end
+            end
+          end
+
+          describe 'and we can calculate a distance based between users' do
+            subject{user.get_distance(other_id)}
+            it do
+              subject.should > 0.142
+              subject.should < 0.143
+            end
           end
         end
 
