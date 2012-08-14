@@ -63,12 +63,13 @@ module Dank
     private
     def dank_add(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
-      redis.zadd(key, redis.zcard(key)+1, element)
+      redis.zincrby(key, 1, element)
     end
 
     def dank_rem(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
-      redis.zrem(key, element)
+      redis.zincrby(key, -1, element)
+      redis.zremrangebyrank(key, 0, 0)
     end
   end
 
