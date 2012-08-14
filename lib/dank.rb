@@ -15,7 +15,6 @@ module Dank
       Dank.add(tag)
       dank_add @taggable_name, @objekt.id, tag
       dank_add 'tags', tag, @objekt.id
-      dank_add_intersections @objekt.id, tag
       get_array
     end
 
@@ -27,7 +26,6 @@ module Dank
       if redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
-      dank_rem_intersections @objekt.id, tag
       get_array
     end
 
@@ -52,10 +50,14 @@ module Dank
     end
 
     def get_shared(other_id)
-      both = [@objekt.id.to_s, other_id.to_s].sort
-      one = both.first
-      two = both.last
-      redis.smembers "dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}"
+      intersection = redis.multi do
+        key = "danktemp:#{Random.rand(500)}"
+        redis.zinterstore key, ["dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",
+                                "dank:#{Dank.app_name}:#{@taggable_name}:#{other_id}"]
+        redis.zrange key, 0, -1
+        redis.del key
+      end
+      intersection[1] # real value is [count, [items], somethingelse]
     end
 
     private
@@ -67,36 +69,6 @@ module Dank
     def dank_rem(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       redis.zrem(key, element)
-    end
-
-    def dank_add_intersections(taggable, tag)
-      tags = redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{taggable}",0,-1)
-      taggables = redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1)
-
-      tags.each do |t|
-        one, two = [tag.to_s, t.to_s].sort
-        redis.sadd("dank:#{Dank.app_name}:intersection:tags:#{one}:#{two}", taggable) unless one == two
-      end
-
-      taggables.each do |t|
-        one, two = [taggable.to_s, t.to_s].sort
-        redis.sadd("dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", tag) unless one == two
-      end
-    end
-
-    def dank_rem_intersections(taggable, tag)
-      tags = redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{taggable}",0,-1)
-      taggables = redis.zrange("dank:#{Dank.app_name}:tags:#{tag}",0,-1)
-
-      tags.each do |t|
-        one, two = [tag.to_s, t.to_s].sort
-        redis.srem("dank:#{Dank.app_name}:intersection:tags:#{one}:#{two}", taggable) unless one == two
-      end
-
-      taggables.each do |t|
-        one, two = [taggable.to_s, t.to_s].sort
-        redis.srem("dank:#{Dank.app_name}:intersection:#{@taggable_name}:#{one}:#{two}", tag) unless one == two
-      end
     end
   end
 
