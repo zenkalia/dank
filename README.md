@@ -7,15 +7,9 @@ Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-wit
 ## Benchmarking?  Performance?
 ```
 rake db:test_seed[users,tags,data_points]
+rake db:test_reads[users,tags,data_points]
 ```
-So far, everything looks very linear with respect to database size.  The linear coefficient between your data points and your MB used changed depending on the number of collisions/intersections.
-
-For example with 32000 data points:
-
-Users 	| Tags	| MBs used	|Secs to seed
-:-----:	|:-----:|:-----:	|:-----:
-3200	|1600	|112.54		|171.66
-800		|200	|229.15		|540
+Previous benchmarks have proven that moving forward we should just trust Redis until proven otherwise.  Calculating intersections, although running in constant-ish time and taking linear-ish memory, ended up taking way too much memory to be practical (again, until proven otherwise).
 
 ## TODO list
 
