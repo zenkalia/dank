@@ -73,6 +73,6 @@ module Dank
     end
     return 0 if intersection[0] == 0
     intersection[0] / (redis.zcard(key1).to_f +
-                       redis.zcard(key2) )
+                       redis.zcard(key2) ) * 2
   end
 end

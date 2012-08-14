@@ -210,8 +210,8 @@ describe 'Dank' do
           describe 'and we can calculate a distance based between users' do
             subject{user.get_distance(other_id)}
             it do
-              subject.should > 0.142
-              subject.should < 0.143
+              subject.should > 0.284
+              subject.should < 0.286
             end
           end
         end
