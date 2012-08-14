@@ -35,5 +35,21 @@ namespace :db do
       u.add_tag "#{Random.rand(tags)}_TAG"
     end
   end
+
+  task :test_reads, :users, :tags, :reads do |t, args|
+    users = (args[:users] || 500).to_i
+    tags = (args[:tags] || 100).to_i
+    reads = (args[:reads] || 2000).to_i
+
+    reads.times do
+      a = Dank.redis.multi do
+        key = "danktemp:#{Random.rand(500)}"
+        Dank.redis.zinterstore key, ["dank:hate:user:#{Random.rand(users)}", "dank:hate:user:#{Random.rand(users)}"]
+        Dank.redis.zrange key, 0, -1
+        Dank.redis.del key
+      end
+      #puts a.inspect unless a[0] == 0
+    end
+  end
 end
 
