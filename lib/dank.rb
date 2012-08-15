@@ -64,15 +64,9 @@ module Dank
   end
 
   def self.distance(key1, key2)
-    intersection = redis.multi do
-      key = "danktemp:#{Random.rand(500)}"
-      redis.zinterstore key, [key1,
-                              key2]
-      redis.zrange key, 0, -1
-      redis.del key
-    end
-    return 0 if intersection[0] == 0
-    intersection[0] / (redis.zcard(key1).to_f +
-                       redis.zcard(key2) ) * 2
+    intersection = redis.sinter([key1, key2]).count
+    return 0 if intersection == 0
+    intersection / (redis.scard(key1).to_f +
+                    redis.scard(key2) ) * 2
   end
 end

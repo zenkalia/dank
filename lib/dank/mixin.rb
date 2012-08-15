@@ -60,8 +60,8 @@ module Dank
     end
 
     def get_distance(other_id)
-      Dank.distance "dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",
-                    "dank:#{Dank.app_name}:#{@taggable_name}:#{other_id}"
+      Dank.distance "dank:sets:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",
+                    "dank:sets:#{Dank.app_name}:#{@taggable_name}:#{other_id}"
     end
 
     def neighbors
@@ -107,10 +107,10 @@ module Dank
     def dank_rem(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       skey = "dank:sets:#{Dank.app_name}:#{receive_type}:#{receive_id}"
-      rank = redis.zrank(key, element)
+      rank = redis.zscore(key, element).to_i
       redis.multi do
         redis.zincrby(key, -1, element)
-        redis.zremrangebyrank(key, 0, 0)
+        redis.zremrangebyscore(key, 0, 0)
         redis.srem(skey, element) if rank == 1
       end
     end
