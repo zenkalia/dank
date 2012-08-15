@@ -65,11 +65,18 @@ module Dank
     end
 
     def neighbors
-      users = []
-      get_array.each do |tag|
-        users << redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}", 0, -1)
+      my_tags = get_array.map do |tag|
+        "dank:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
-      users = users.flatten.uniq
+
+      union = redis.multi do
+        key = "danktemp:#{Random.rand(500)}"
+        redis.zunionstore key, my_tags
+        redis.zrange key, 0, -1
+        redis.del key
+      end
+
+      users = union[1]
       users.delete @objekt.id.to_s
       weights = {}
       users.each do |user|
@@ -89,13 +96,23 @@ module Dank
     private
     def dank_add(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
-      redis.zincrby(key, 1, element)
+      skey = "dank:sets:#{Dank.app_name}:#{receive_type}:#{receive_id}"
+
+      redis.multi do
+        redis.zincrby(key, 1, element)
+        redis.sadd(skey, element)
+      end
     end
 
     def dank_rem(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
-      redis.zincrby(key, -1, element)
-      redis.zremrangebyrank(key, 0, 0)
+      skey = "dank:sets:#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      rank = redis.zrank(key, element)
+      redis.multi do
+        redis.zincrby(key, -1, element)
+        redis.zremrangebyrank(key, 0, 0)
+        redis.srem(skey, element) if rank == 1
+      end
     end
   end
 
