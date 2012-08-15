@@ -40,8 +40,8 @@ describe 'Dank' do
 
   describe 'mixin' do
     describe 'tag_name' do
-      let(:klass) do
-        Band = Class.new do
+      before :all do
+        class Band
           include Dank::Taggable
           tag_name :genre
 
@@ -54,6 +54,7 @@ describe 'Dank' do
           end
         end
       end
+      let(:klass){ Band }
 
       describe 'method names' do
         let(:user) { klass.new 1 }
@@ -86,14 +87,15 @@ describe 'Dank' do
       end
     end
     describe 'does nothing without a .id' do
-      let(:klass) do
-        Class.new do
+      before :all do
+        class User
           include Dank::Taggable
           def id
             nil
           end
         end
       end
+      let(:klass){ User }
 
       let(:user){ klass.new }
 
@@ -109,10 +111,9 @@ describe 'Dank' do
       end
     end
     describe 'does good things with a .id' do
-      let(:klass) do
-        Class.new do
+      before :all do
+        class User
           include Dank::Taggable
-          tag_name :tag
 
           def initialize (id)
             @id = id
@@ -123,6 +124,7 @@ describe 'Dank' do
           end
         end
       end
+      let(:klass){ User }
 
       let(:id){ 'unique' }
       let(:other_id){ 'also_unique' }

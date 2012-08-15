@@ -5,8 +5,8 @@ describe 'Dank' do
   describe 'module functions'
 
   describe 'mixin' do
-    let(:klass) do
-      Class.new do
+    before :all do
+      class User
         include Dank::Taggable
         tag_name :tag
 
@@ -19,6 +19,8 @@ describe 'Dank' do
         end
       end
     end
+
+    let(:klass){ User }
 
     describe 'adding tags is cool' do
       let(:user){ klass.new 4 }
