@@ -58,6 +58,7 @@ describe 'Dank' do
       describe 'method names' do
         let(:user) { klass.new 1 }
         let(:other_user) { klass.new 2 }
+        let(:third_user) { klass.new 3 }
         it "works properly" do
           user.add_genre 'pop'
           user.add_genre 'rock'
@@ -77,6 +78,10 @@ describe 'Dank' do
           lambda { user.add_tag 'sexy' }.should raise_error
           lambda { user.add_leg 'long' }.should raise_error
           Dank.redis.zrange('dank:hate:genre:rnb', 0, -1).should =~ ['1']
+          third_user.add_genre 'rap'
+          third_user.add_genre 'rnb'
+          third_user.add_genre 'country'
+          user.neighbors.should == [third_user.id.to_s, other_user.id.to_s]
         end
       end
     end

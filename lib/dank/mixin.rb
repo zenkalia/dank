@@ -64,6 +64,28 @@ module Dank
                     "dank:#{Dank.app_name}:#{@taggable_name}:#{other_id}"
     end
 
+    def neighbors
+      users = []
+      get_array.each do |tag|
+        users << redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}", 0, -1)
+      end
+      users = users.flatten.uniq
+      users.delete @objekt.id.to_s
+      weights = {}
+      users.each do |user|
+        weights[user] = get_distance user
+      end
+      users.sort do |a,b|
+        if weights[a] < weights[b]
+          1
+        elsif weights[a] == weights[b]
+          0
+        else
+          -1
+        end
+      end
+    end
+
     private
     def dank_add(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
@@ -110,6 +132,10 @@ module Dank
 
         define_method :get_distance do |other_id|
           tag_lib.get_distance other_id
+        end
+
+        define_method :neighbors do
+          tag_lib.neighbors
         end
 
         define_singleton_method :"suggest_#{name}s" do |prefix|
