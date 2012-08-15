@@ -49,14 +49,8 @@ module Dank
     end
 
     def get_shared(other_id)
-      intersection = redis.multi do
-        key = "danktemp:#{Random.rand(500)}"
-        redis.zinterstore key, ["dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",
-                                "dank:#{Dank.app_name}:#{@taggable_name}:#{other_id}"]
-        redis.zrange key, 0, -1
-        redis.del key
-      end
-      intersection[1] # real value is [count, [items], somethingelse]
+      redis.sinter ["dank:sets:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",
+                    "dank:sets:#{Dank.app_name}:#{@taggable_name}:#{other_id}"]
     end
 
     def get_distance(other_id)
@@ -66,17 +60,9 @@ module Dank
 
     def neighbors
       my_tags = get_array.map do |tag|
-        "dank:#{Dank.app_name}:#{@tag_name}:#{tag}"
+        "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
-
-      union = redis.multi do
-        key = "danktemp:#{Random.rand(500)}"
-        redis.zunionstore key, my_tags
-        redis.zrange key, 0, -1
-        redis.del key
-      end
-
-      users = union[1]
+      users = redis.sunion my_tags
       users.delete @objekt.id.to_s
       weights = {}
       users.each do |user|
