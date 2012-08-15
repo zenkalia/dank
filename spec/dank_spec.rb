@@ -83,6 +83,10 @@ describe 'Dank' do
           third_user.add_genre 'rnb'
           third_user.add_genre 'country'
           user.neighbors.should == [third_user.id.to_s, other_user.id.to_s]
+          klass.genre_neighbors('rap').should =~ ['country', 'rnb', 'rock']
+          other_user.add_genre 'pop'
+          other_user.remove_genre 'rap'
+          klass.genre_neighbors('pop').should == []
         end
       end
     end

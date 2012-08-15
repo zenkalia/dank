@@ -58,6 +58,11 @@ module Dank
                     "dank:sets:#{Dank.app_name}:#{@taggable_name}:#{other_id}"
     end
 
+    def self.tag_distance(tag_name, tag1, tag2)
+      Dank.distance "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag1}",
+                    "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag2}"
+    end
+
     def neighbors
       my_tags = get_array.map do |tag|
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
@@ -69,6 +74,29 @@ module Dank
         weights[user] = get_distance user
       end
       users.sort do |a,b|
+        if weights[a] < weights[b]
+          1
+        elsif weights[a] == weights[b]
+          0
+        else
+          -1
+        end
+      end
+    end
+
+    def self.tag_neighbors taggable_name, tag_name, tag
+      users = Dank.redis.smembers "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag}"
+      my_user_keys = users.map do |user|
+        "dank:sets:#{Dank.app_name}:#{taggable_name}:#{user}"
+      end
+      return [] if my_user_keys == []
+      tags = Dank.redis.sunion my_user_keys
+      tags.delete tag
+      weights = {}
+      tags.each do |t|
+        weights[t] = tag_distance tag_name, tag, t
+      end
+      tags.sort do |a,b|
         if weights[a] < weights[b]
           1
         elsif weights[a] == weights[b]
@@ -139,6 +167,10 @@ module Dank
 
         define_method :neighbors do
           tag_lib.neighbors
+        end
+
+        define_singleton_method :"#{name}_neighbors" do |genre|
+          Dank::Tags.tag_neighbors Dank.sanitize(self.name), @__tag_name, genre
         end
 
         define_singleton_method :"suggest_#{name}s" do |prefix|
