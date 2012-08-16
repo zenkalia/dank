@@ -19,7 +19,7 @@ module Dank
     s.squeeze('  ').strip.downcase
   end
 
-  def self.suggest_tags(prefix, count = 5)
+  def self.autocomplete(prefix, count = 5)
     prefix = sanitize prefix
     results = []
     rangelen = 100
@@ -58,7 +58,7 @@ module Dank
     redis.zrem 'dank:tags', "#{tag}+"
     tag.length.downto(1).each do |l|
       prefix = tag[0...l]
-      break if suggest_tags(prefix).count > 0
+      break if autocomplete(prefix).count > 0
       redis.zrem 'dank:tags', prefix
     end
   end

@@ -17,7 +17,7 @@ describe 'Dank' do
       end
 
       describe 'we can also suggest based on a prefix' do
-        subject{Dank.suggest_tags 't'}
+        subject{Dank.autocomplete 't'}
 
         it do
           subject.should == ['traps', 'turtles']
@@ -69,7 +69,7 @@ describe 'Dank' do
           user.add_genre 'rap'
           user.add_genre 'rnb'
           user.add_genre 'country'
-          klass.suggest_genres('r').should =~ ['rock','rap','rnb']
+          Dank.autocomplete('r').should =~ ['rock','rap','rnb']
 
           other_user = klass.new 2
           other_user.add_genre 'rap'
@@ -147,7 +147,7 @@ describe 'Dank' do
         subject{user.tags}
 
         its(:count){should == 5}
-        it { Dank.suggest_tags('che').should == ['cheese'] }
+        it { Dank.autocomplete('che').should == ['cheese'] }
 
         describe 'repeated tags go nowhere' do
           before do
@@ -184,7 +184,7 @@ describe 'Dank' do
             before do
               other_user.remove_tag 'cheese'
             end
-            it { Dank.suggest_tags('che').should == ['cheese'] }
+            it { Dank.autocomplete('che').should == ['cheese'] }
           end
         end
 
@@ -195,7 +195,7 @@ describe 'Dank' do
           its(:count){should == 4}
 
           describe 'and the global tag set gets cleaned up when no one has a tag' do
-            it { Dank.suggest_tags('che').should == [] }
+            it { Dank.autocomplete('che').should == [] }
           end
 
           describe 'with multiple users, we can read who shared a tag' do

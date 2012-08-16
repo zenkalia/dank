@@ -197,11 +197,6 @@ module Dank
           Dank::Tags.tag_neighbors Dank.sanitize(self.name), @__tag_name, genre
         end
 
-        define_singleton_method :"suggest_#{name}s" do |prefix|
-          Dank.suggest_tags prefix
-          # this is going to change to be specific to the taggable that you're calling this on
-        end
-
         define_singleton_method :"#{name}_distance" do |tag1, tag2|
           tag_lib.tag_distance tag1, tag2
         end
