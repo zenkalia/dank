@@ -158,6 +158,19 @@ describe 'Dank' do
           describe 'but they do get reflected by score' do
             subject{user.tags_hash}
             its(['whatever']){should == 2}
+
+            describe 'and you can decrement the tag without it disappearing' do
+              before do
+                user.decrement_tag 'whatever'
+              end
+              its(['whatever']){should == 1}
+              describe 'decrement it again and it will disappear' do
+                before do
+                  user.decrement_tag 'whatever'
+                end
+                its(['whatever']){should be_nil}
+              end
+            end
           end
         end
 

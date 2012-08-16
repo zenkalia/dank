@@ -24,6 +24,16 @@ module Dank
       end
     end
 
+    def decrement(tag)
+      return false unless @objekt.id
+      tag = Dank.sanitize tag
+      dank_decrement @taggable_name, @objekt.id, tag
+      dank_decrement @tag_name, tag, @objekt.id
+      if redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
+        Dank.remove tag
+      end
+    end
+
     def get_array
       return [] unless @objekt.id
       redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1)
@@ -118,13 +128,23 @@ module Dank
       end
     end
 
-    def dank_rem(receive_type, receive_id, element)
+    def dank_decrement(receive_type, receive_id, element)
       key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       skey = "dank:sets:#{Dank.app_name}:#{receive_type}:#{receive_id}"
       rank = redis.zscore(key, element).to_i
       redis.multi do
         redis.zincrby(key, -1, element)
         redis.zremrangebyscore(key, 0, 0)
+        redis.srem(skey, element) if rank == 1
+      end
+    end
+
+    def dank_rem(receive_type, receive_id, element)
+      key = "dank:#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      skey = "dank:sets:#{Dank.app_name}:#{receive_type}:#{receive_id}"
+      rank = redis.zscore(key, element).to_i
+      redis.multi do
+        redis.zrem(key, element)
         redis.srem(skey, element) if rank == 1
       end
     end
@@ -151,6 +171,10 @@ module Dank
 
         define_method :"remove_#{name}" do |tag|
           tag_lib.remove tag
+        end
+
+        define_method :"decrement_#{name}" do |tag|
+          tag_lib.decrement tag
         end
 
         define_method :"reorder_#{name}s" do |tags|
