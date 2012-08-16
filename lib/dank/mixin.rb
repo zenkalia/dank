@@ -9,7 +9,7 @@ module Dank
     def add(tag)
       return false unless @objekt.id
       tag = Dank.sanitize tag
-      Dank.add(tag)
+      Dank.add(tag) if Dank.autocomplete_on
       dank_add @taggable_name, @objekt.id, tag
       dank_add @tag_name, tag, @objekt.id
     end
@@ -19,7 +19,7 @@ module Dank
       tag = Dank.sanitize tag
       dank_rem @taggable_name, @objekt.id, tag
       dank_rem @tag_name, tag, @objekt.id
-      if redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
+      if Dank.autocomplete_on and redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
     end
@@ -29,7 +29,7 @@ module Dank
       tag = Dank.sanitize tag
       dank_decrement @taggable_name, @objekt.id, tag
       dank_decrement @tag_name, tag, @objekt.id
-      if redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
+      if Dank.autocomplete_on and redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
     end

@@ -5,10 +5,16 @@ require 'redis'
 module Dank
   def self.config config
     @app_name = config[:app_name]
+    @autocomplete_on = config[:autocomplete]
   end
 
   def self.app_name
     @app_name || 'hate'
+  end
+
+  def self.autocomplete_on
+    return @autocomplete_on unless @autocomplete_on == nil
+    true
   end
 
   def self.redis

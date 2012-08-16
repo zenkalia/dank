@@ -39,6 +39,31 @@ describe 'Dank' do
   end
 
   describe 'mixin' do
+    describe 'config' do
+      before :all do
+        class ConfigUser
+          include Dank::Taggable
+
+          def initialize (id)
+            @id = id
+          end
+
+          def id
+            @id
+          end
+        end
+      end
+      before do
+        Dank.config autocomplete: false
+        a = ConfigUser.new 8
+        a.add_tag 'boners'
+      end
+      subject{ Dank.autocomplete 'b' }
+      its(:count){should == 0}
+      after do
+        Dank.config autocomplete: true
+      end
+    end
     describe 'tag_name' do
       before :all do
         class Band
