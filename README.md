@@ -59,8 +59,8 @@ To get the distance between two tags, try `User.tag_distance 'sexy', 'beast'`.
 
 `Dank.config` takes a hash.  Options currently are:
 
-* `app_name` for namespacing your redis keys, not actually that important
-* `autocomplete` this option is on by default, if turned off Dank will not keep a dictionary of tags / words / whatevers (accessible through `Dank.autocomplete prefix`)
+* `app_name` for namespacing your redis keys, not actually that important (`Dank.app_name { app_name: hater_dater}`)
+* `autocomplete` this option is on by default, if turned off Dank will not keep a dictionary of tags / words / whatevers (accessible through `Dank.autocomplete prefix`) (`Dank.config {autocomplete: false}`)
 
 If you want to change your tag name, use the `tag_name` function.
 
