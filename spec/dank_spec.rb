@@ -188,11 +188,13 @@ describe 'Dank' do
 
             describe 'and you can decrement the tag without it disappearing' do
               before do
+                user.add_tag 'whatever'
                 user.decrement_tag 'whatever'
               end
-              its(['whatever']){should == 1}
+              its(['whatever']){should == 2}
               describe 'decrement it again and it will disappear' do
                 before do
+                  user.decrement_tag 'whatever'
                   user.decrement_tag 'whatever'
                 end
                 its(['whatever']){should be_nil}
