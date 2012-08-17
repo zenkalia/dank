@@ -49,7 +49,7 @@ If you want to remove a tag entirely, use `a.remove_tag 'sexy'`, as opposed to `
 
 If you want to get these counters along with your tags, use `a.tags_hash`.  `a.tags` will only give you an array (sorted by the tags, but without the actual values).
 
-`a.shared_tags b` will give you the set of shared tags between taggabke a and the taggable b.  Alternately, `a.shared_tags b.id`
+`a.shared_tags b` will give you the set of shared tags between taggable a and the taggable b.  Alternately, `a.shared_tags b.id`
 
 If you'd like to compare yourself to someone else by a distance rather than an array, try `a.get_distance b`.  You could also do `a.get_distance b.id` and get the same result.
 
