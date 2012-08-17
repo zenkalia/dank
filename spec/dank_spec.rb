@@ -240,7 +240,10 @@ describe 'Dank' do
             other_user.add_tag 'jesus'
           end
           subject{user.shared_tags(other_id)}
-          it {subject.should =~ ['cheese']}
+          it do
+            subject.should =~ ['cheese']
+            subject.should == user.shared_tags(other_user)
+          end
 
           describe 'it even gets updated on tag removal' do
             before do
@@ -257,6 +260,7 @@ describe 'Dank' do
               subject{user.get_distance(other_id)}
               it do
                 subject.should == 0
+                subject.should == user.get_distance(other_user)
               end
             end
           end

@@ -43,6 +43,18 @@ end
  => ["beast"]
 ```
 
+Tag all have internal counters.  Calling `a.add_tag 'sexy'` will either set the counter to 1 or (if it's already set) increase it by 1.
+
+If you want to remove a tag entirely, use `a.remove_tag 'sexy'`, as opposed to `a.decrement_tag 'sexy'` which will decrement it by 1 and remove it entirely if it hits 0.
+
+If you want to get these counters along with your tags, use `a.tags_hash`.  `a.tags` will only give you an array (sorted by the tags, but without the actual values).
+
+`a.shared_tags b` will give you the set of shared tags between taggabke a and the taggable b.  Alternately, `a.shared_tags b.id`
+
+If you'd like to compare yourself to someone else by a distance rather than an array, try `a.get_distance b`.  You could also do `a.get_distance b.id` and get the same result.
+
+To get the distance between two tags, try `User.tag_distance 'sexy', 'beast'`.
+
 ## TODO list
 
 * namespace the redis with RACK_ENV

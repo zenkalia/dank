@@ -84,6 +84,7 @@ module Dank
       my_tags = get_array.map do |tag|
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
+      return [] if my_tags == []
       users = redis.sunion my_tags
       users.delete @objekt.id.to_s
       weights = {}
@@ -189,11 +190,13 @@ module Dank
           tag_lib.reorder(tags)
         end
 
-        define_method :"shared_#{name}s" do |other_id|
+        define_method :"shared_#{name}s" do |other|
+          other_id = other.respond_to?(:id) ? other.id : other
           tag_lib.get_shared other_id
         end
 
-        define_method :get_distance do |other_id|
+        define_method :get_distance do |other|
+          other_id = other.respond_to?(:id) ? other.id : other
           tag_lib.get_distance other_id
         end
 
