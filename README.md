@@ -43,7 +43,7 @@ end
  => ["beast"]
 ```
 
-Tag all have internal counters.  Calling `a.add_tag 'sexy'` will either set the counter to 1 or (if it's already set) increase it by 1.
+Tags all have internal counters.  Calling `a.add_tag 'sexy'` will either set the counter to 1 or (if it's already set) increase it by 1.
 
 If you want to remove a tag entirely, use `a.remove_tag 'sexy'`, as opposed to `a.decrement_tag 'sexy'` which will decrement it by 1 and remove it entirely if it hits 0.
 
