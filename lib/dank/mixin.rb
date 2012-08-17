@@ -74,6 +74,13 @@ module Dank
     end
 
     def neighbors
+      weights = neighbors_hash
+      weights.keys.sort do |a,b|
+        self.class.sort_weights weights[a], weights[b]
+      end
+    end
+
+    def neighbors_hash
       my_tags = get_array.map do |tag|
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
@@ -83,18 +90,17 @@ module Dank
       users.each do |user|
         weights[user] = get_distance user
       end
-      users.sort do |a,b|
-        if weights[a] < weights[b]
-          1
-        elsif weights[a] == weights[b]
-          0
-        else
-          -1
-        end
-      end
+      weights
     end
 
     def self.tag_neighbors taggable_name, tag_name, tag
+      weights = self.tag_neighbors_hash taggable_name, tag_name, tag
+      weights.keys.sort do |a,b|
+        sort_weights weights[a], weights[b]
+      end
+    end
+
+    def self.tag_neighbors_hash taggable_name, tag_name, tag
       users = Dank.redis.smembers "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag}"
       my_user_keys = users.map do |user|
         "dank:sets:#{Dank.app_name}:#{taggable_name}:#{user}"
@@ -106,14 +112,16 @@ module Dank
       tags.each do |t|
         weights[t] = tag_distance tag_name, tag, t
       end
-      tags.sort do |a,b|
-        if weights[a] < weights[b]
-          1
-        elsif weights[a] == weights[b]
-          0
-        else
-          -1
-        end
+      weights
+    end
+
+    def self.sort_weights(a,b)
+      if a < b
+        1
+      elsif a == b
+        0
+      else
+        -1
       end
     end
 
@@ -193,8 +201,16 @@ module Dank
           tag_lib.neighbors
         end
 
+        define_method :neighbors_hash do
+          tag_lib.neighbors_hash
+        end
+
         define_singleton_method :"#{name}_neighbors" do |genre|
           Dank::Tags.tag_neighbors Dank.sanitize(self.name), @__tag_name, genre
+        end
+
+        define_singleton_method :"#{name}_neighbors_hash" do |genre|
+          Dank::Tags.tag_neighbors_hash Dank.sanitize(self.name), @__tag_name, genre
         end
 
         define_singleton_method :"#{name}_distance" do |tag1, tag2|
