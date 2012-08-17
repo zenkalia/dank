@@ -1,6 +1,6 @@
 # Dank
 
-A Redis-backed gem for making a tag cloud thingie!
+A Redis-backed gem for tagging objects, using those tag relations and autocompleting on those tags.  These are kind of two problems, but related enough that I put them in one gem (because with autocomplete you'll have fewer repeated tags with different spellings, for example).
 
 Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-with-redis.html>
 
@@ -9,7 +9,7 @@ Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-wit
 rake db:test_seed[users,tags,data_points]
 rake db:test_reads[users,tags,data_points]
 ```
-Previous benchmarks have proven that moving forward we should just trust Redis until proven otherwise.  Calculating intersections, although running in constant-ish time and taking linear-ish memory, ended up taking way too much memory to be practical (again, until proven otherwise).
+Previous benchmarks have proven that we should just trust Redis until proven otherwise.  Calculating intersections, although running in constant-ish time and taking linear-ish memory, ended up taking way too much memory to be practical (until proven otherwise! though I have a lot of unimplemented ideas for performance increases).
 
 ## Usage!
 
@@ -54,6 +54,25 @@ If you want to get these counters along with your tags, use `a.tags_hash`.  `a.t
 If you'd like to compare yourself to someone else by a distance rather than an array, try `a.get_distance b`.  You could also do `a.get_distance b.id` and get the same result.
 
 To get the distance between two tags, try `User.tag_distance 'sexy', 'beast'`.
+
+## Config!
+
+`Dank.config` takes a hash.  Options currently are:
+
+* `app_name` for namespacing your redis keys, not actually that important
+* `autocomplete` this option is on by default, if turned off Dank will not keep a dictionary of tags / words / whatevers (accessible through `Dank.autocomplete prefix`)
+
+If you want to change your tag name, use the `tag_name` function.
+
+```
+class Band
+  attr_accessor :id
+  include Dank::Taggable
+  tag_name :genre
+end
+```
+
+**In the future, this functionality will allow multiple tag types on one taggable, but that's not the case now.**
 
 ## TODO list
 
