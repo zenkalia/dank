@@ -84,7 +84,7 @@ module Dank
       my_tags = get_array.map do |tag|
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
-      return [] if my_tags == []
+      return {} if my_tags == []
       users = redis.sunion my_tags
       users.delete @objekt.id.to_s
       weights = {}
@@ -106,7 +106,7 @@ module Dank
       my_user_keys = users.map do |user|
         "dank:sets:#{Dank.app_name}:#{taggable_name}:#{user}"
       end
-      return [] if my_user_keys == []
+      return {} if my_user_keys == []
       tags = Dank.redis.sunion my_user_keys
       tags.delete tag
       weights = {}
