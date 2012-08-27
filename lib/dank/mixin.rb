@@ -10,15 +10,15 @@ module Dank
       return false unless @objekt.id
       tag = Dank.sanitize tag
       Dank.add(tag) if Dank.autocomplete_on
-      dank_add @taggable_name, @objekt.id, tag
-      dank_add @tag_name, tag, @objekt.id
+      dank_add @taggable_name, @objekt.id.to_s, tag
+      dank_add @tag_name, tag, @objekt.id.to_s
     end
 
     def remove(tag)
       return false unless @objekt.id
       tag = Dank.sanitize tag
-      dank_rem @taggable_name, @objekt.id, tag
-      dank_rem @tag_name, tag, @objekt.id
+      dank_rem @taggable_name, @objekt.id.to_s, tag
+      dank_rem @tag_name, tag, @objekt.id.to_s
       if Dank.autocomplete_on and redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
@@ -27,8 +27,8 @@ module Dank
     def decrement(tag)
       return false unless @objekt.id
       tag = Dank.sanitize tag
-      dank_decrement @taggable_name, @objekt.id, tag
-      dank_decrement @tag_name, tag, @objekt.id
+      dank_decrement @taggable_name, @objekt.id.to_s, tag
+      dank_decrement @tag_name, tag, @objekt.id.to_s
       if Dank.autocomplete_on and redis.zrange("dank:#{Dank.app_name}:#{@tag_name}:#{tag}",0,-1).count < 1
         Dank.remove tag
       end
@@ -108,7 +108,7 @@ module Dank
       end
       return {} if my_user_keys == []
       tags = Dank.redis.sunion my_user_keys
-      tags.delete tag
+      tags.delete tag.to_s
       weights = {}
       tags.each do |t|
         weights[t] = tag_distance tag_name, tag, t
