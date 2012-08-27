@@ -22,7 +22,7 @@ module Dank
   end
 
   def self.sanitize(s)
-    s.squeeze('  ').strip.downcase
+    s.to_s.squeeze('  ').strip.downcase
   end
 
   def self.autocomplete(prefix, count = 5)
