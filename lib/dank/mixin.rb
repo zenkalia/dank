@@ -85,7 +85,7 @@ module Dank
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
       return {} if my_tags == []
-      users = redis.sunion my_tags
+      users = redis.sunion *my_tags
       users.delete @objekt.id.to_s
       weights = {}
       users.each do |user|
@@ -107,7 +107,7 @@ module Dank
         "dank:sets:#{Dank.app_name}:#{taggable_name}:#{user}"
       end
       return {} if my_user_keys == []
-      tags = Dank.redis.sunion my_user_keys
+      tags = Dank.redis.sunion *my_user_keys
       tags.delete tag.to_s
       weights = {}
       tags.each do |t|
