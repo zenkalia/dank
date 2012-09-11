@@ -44,6 +44,26 @@ module Dank
       Hash[redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1,{withscores:true})]
     end
 
+    def tag_suggestions_hash
+      weights = {}
+      self.get_hash.each do |k,v|
+        self.class.tag_neighbors_hash(@taggable_name, @tag_name, k).each do |k2,v2|
+          unless self.get_array.index k2
+            weights[k2] ||= 0
+            weights[k2] += v*v2
+          end
+        end
+      end
+      weights
+    end
+
+    def tag_suggestions
+      weights = tag_suggestions_hash
+      weights.keys.sort do |a,b|
+        self.class.sort_weights weights[a], weights[b]
+      end
+    end
+
     def reorder(tags)
       return false unless @objekt.id
       return false unless tags.sort == get_array.sort # for making sure that we don't allow a reorder without every tag present
@@ -188,6 +208,14 @@ module Dank
 
         define_method :"reorder_#{name}s" do |tags|
           tag_lib.reorder(tags)
+        end
+
+        define_method :"#{name}_suggestions" do
+          tag_lib.tag_suggestions
+        end
+
+        define_method :"#{name}_suggestions_hash" do
+          tag_lib.tag_suggestions_hash
         end
 
         define_method :"shared_#{name}s" do |other|

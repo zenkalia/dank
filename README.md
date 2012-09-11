@@ -55,6 +55,8 @@ If you'd like to compare yourself to someone else by a distance rather than an a
 
 To get the distance between two tags, try `User.tag_distance 'sexy', 'beast'`.
 
+If you want tag suggestions for a taggable based on what tags is already has, use `a.tag_suggestions` or `a.tag_suggestions_hash`.
+
 ## Config!
 
 `Dank.config` takes a hash.  Options currently are:

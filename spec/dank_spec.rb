@@ -114,6 +114,10 @@ describe 'Dank' do
           other_user.add_genre 'pop'
           other_user.remove_genre 'rap'
           klass.genre_neighbors('pop').should == []
+          user.remove_genre 'rap'
+          user.genre_suggestions.should == ['rap']
+          user.remove_genre 'country'
+          user.genre_suggestions.should =~ ['rap', 'country']
         end
       end
     end
