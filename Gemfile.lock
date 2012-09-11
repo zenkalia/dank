@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     dank (0.0.1)
-      redis
+      redis (>= 3.0)
 
 GEM
   remote: https://rubygems.org/

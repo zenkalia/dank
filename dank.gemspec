@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Dank::VERSION
 
-  gem.add_dependency 'redis'
+  gem.add_dependency 'redis', '>= 3.0'
 
   gem.add_development_dependency 'pry'
   gem.add_development_dependency 'rake'
