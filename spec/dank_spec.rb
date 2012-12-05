@@ -319,14 +319,6 @@ describe 'Dank' do
         class ClassUser
           include Dank::Taggable
 
-          def self.find(id)
-            self.new(id)
-          end
-
-          def ==(other)
-            self.id == other.id
-          end
-
           def initialize (id)
             @id = id
           end
@@ -348,7 +340,7 @@ describe 'Dank' do
         end
         subject { ClassUser.find_by_tag_name 'life' }
         it do
-          subject.should == [user]
+          subject.should == [user.id]
         end
       end
 

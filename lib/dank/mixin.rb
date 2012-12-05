@@ -237,8 +237,7 @@ module Dank
         end
 
         define_singleton_method :"find_by_#{name}_name" do |tag|
-          stuff = Dank.redis.smembers "dank:sets:#{Dank.app_name}:#{@__tag_name}:#{tag}"
-          stuff.map{|id| self.find(id)}
+          Dank.redis.smembers "dank:sets:#{Dank.app_name}:#{@__tag_name}:#{tag}"
         end
 
         define_singleton_method :"#{name}_neighbors" do |genre|
