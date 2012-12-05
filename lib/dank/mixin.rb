@@ -236,6 +236,11 @@ module Dank
           tag_lib.neighbors_hash
         end
 
+        define_singleton_method :"find_by_#{name}_name" do |tag|
+          stuff = Dank.redis.smembers "dank:sets:#{Dank.app_name}:#{@__tag_name}:#{tag}"
+          stuff.map{|id| self.find(id)}
+        end
+
         define_singleton_method :"#{name}_neighbors" do |genre|
           Dank::Tags.tag_neighbors Dank.sanitize(self.name), @__tag_name, genre
         end

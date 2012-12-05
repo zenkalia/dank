@@ -314,14 +314,45 @@ describe 'Dank' do
         end
       end
     end
+    describe 'has cool class methods' do
+      before :all do
+        class ClassUser
+          include Dank::Taggable
+
+          def self.find(id)
+            self.new(id)
+          end
+
+          def ==(other)
+            self.id == other.id
+          end
+
+          def initialize (id)
+            @id = id
+          end
+
+          def id
+            @id
+          end
+        end
+      end
+      let(:klass){ ClassUser }
+
+      let(:user){ klass.new('4') }
+      let(:other_user){ klass.new('5') }
+
+      describe 'find_by_tag_name' do
+        before do
+          user.add_tag 'life'
+          other_user.add_tag 'death'
+        end
+        subject { ClassUser.find_by_tag_name 'life' }
+        it do
+          subject.should == [user]
+        end
+      end
+
+    end
   end
 end
-
-#def distance(my_tags,other_tags)
-  #intersection = my_tags & other_tags
-
-  #best_case = [my_tags.count, other_tags.count].min
-
-  #intersection.count.to_f / best_case.count * 100
-#end
 
