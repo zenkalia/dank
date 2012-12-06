@@ -39,6 +39,13 @@ module Dank
       redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1)
     end
 
+    def set_array ary
+      redis.smembers("dank:sets:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}").each { |tag| remove tag }
+      ary.each {|tag| add tag }
+
+      reorder ary
+    end
+
     def get_hash
       return {} unless @objekt.id
       Hash[redis.zrange("dank:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}",0,-1,{withscores:true})]
@@ -196,6 +203,10 @@ module Dank
 
         define_method :"add_#{name}" do |tag|
           tag_lib.add tag
+        end
+
+        define_method :"set_#{name}s" do |tag|
+          tag_lib.set_array tag
         end
 
         define_method :"remove_#{name}" do |tag|
