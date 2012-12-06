@@ -42,7 +42,6 @@ module Dank
     def set_array ary
       redis.smembers("dank:sets:#{Dank.app_name}:#{@taggable_name}:#{@objekt.id}").each { |tag| remove tag }
       ary.each {|tag| add tag }
-
       reorder ary
     end
 
@@ -205,8 +204,12 @@ module Dank
           tag_lib.add tag
         end
 
-        define_method :"set_#{name}s" do |tag|
-          tag_lib.set_array tag
+        define_method :"#{name}s=" do |tags|
+          if tags.kind_of? Array
+            tag_lib.set_array tags
+          else
+            false
+          end
         end
 
         define_method :"remove_#{name}" do |tag|

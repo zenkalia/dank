@@ -118,7 +118,7 @@ describe 'Dank' do
           user.genre_suggestions.should == ['rap']
           user.remove_genre 'country'
           user.genre_suggestions.should =~ ['rap', 'country']
-          user.set_genres(['rock', 'rap', 'instrumental_metal', 'screamo'])
+          user.genres = ['rock', 'rap', 'instrumental_metal', 'screamo']
           user.genres.should == ['rock', 'rap', 'instrumental_metal', 'screamo']
         end
       end
