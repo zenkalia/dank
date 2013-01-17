@@ -120,6 +120,8 @@ describe 'Dank' do
           user.genre_suggestions.should =~ ['rap', 'country']
           user.genres = ['rock', 'rap', 'instrumental_metal', 'screamo']
           user.genres.should == ['rock', 'rap', 'instrumental_metal', 'screamo']
+          user.genres = ['rock', 'rap', 'instrumental_metal', 'ambient']
+          user.genres.should == ['rock', 'rap', 'instrumental_metal', 'ambient']
         end
       end
     end
