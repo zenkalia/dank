@@ -1,5 +1,8 @@
 # Dank
 
+[![Build Status](https://travis-ci.org/zenkalia/dank.png)](https://travis-ci.org/zenkalia/dank)
+
+
 A Redis-backed gem for tagging objects, using those tag relations and autocompleting on those tags.  These are kind of two problems, but related enough that I put them in one gem (because with autocomplete you'll have fewer repeated tags with different spellings, for example).
 
 Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-with-redis.html>
