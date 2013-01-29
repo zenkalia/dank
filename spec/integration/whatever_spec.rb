@@ -10,7 +10,7 @@ describe 'Dank' do
         include Dank::Taggable
         tag_name :tag
 
-        def initialize (id)
+        def initialize(id)
           @id = id
         end
 
