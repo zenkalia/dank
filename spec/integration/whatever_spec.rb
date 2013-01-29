@@ -23,8 +23,8 @@ describe 'Dank' do
     let(:klass){ User }
 
     describe 'adding tags is cool' do
-      let(:user){ klass.new 4 }
-      let(:other_user){ klass.new 5 }
+      let(:user){ klass.new(4) }
+      let(:other_user){ klass.new(5) }
       before do
         user.add_tag 'whatever'
         user.add_tag 'cheese'
