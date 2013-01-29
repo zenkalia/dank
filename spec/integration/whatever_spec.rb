@@ -6,7 +6,7 @@ describe 'Dank' do
 
   describe 'mixin' do
     before :all do
-      class User
+      class FuckerUser
         include Dank::Taggable
         tag_name :tag
 
@@ -20,7 +20,7 @@ describe 'Dank' do
       end
     end
 
-    let(:klass){ User }
+    let(:klass){ FuckerUser }
 
     describe 'adding tags is cool' do
       let(:user){ klass.new(4) }
