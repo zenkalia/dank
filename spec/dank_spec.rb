@@ -109,7 +109,7 @@ describe 'Dank' do
           third_user.add_genre 'country'
           user.neighbors.should == [third_user.id.to_s, other_user.id.to_s]
           user.neighbors_hash.keys.should =~ [other_user.id.to_s, third_user.id.to_s] # i should be sorting this and comparing it...  nope
-          klass.genre_neighbors('rap').should == ['country', 'rnb', 'rock']
+          klass.genre_neighbors('rap').should =~ ['country', 'rnb', 'rock']
           klass.genre_neighbors_hash('rap').keys.should =~ ['country', 'rnb', 'rock']
           other_user.add_genre 'pop'
           other_user.remove_genre 'rap'
