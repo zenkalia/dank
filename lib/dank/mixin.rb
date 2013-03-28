@@ -99,6 +99,18 @@ module Dank
                     "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag2}"
     end
 
+    def self.ordered_tags(limit=10)
+      ret = []
+      tags = Dank.redis.keys('dank:sets:hate:genre:*')
+      tags.each do |tag|
+        ret << [tag.split(':').last, Dank.redis.smembers(tag).count]
+      end
+      ret.sort_by! do |t|
+        -t[1]
+      end
+      ret[0,limit]
+    end
+
     def neighbors
       weights = neighbors_hash
       weights.keys.sort do |a,b|
@@ -111,7 +123,7 @@ module Dank
         "dank:sets:#{Dank.app_name}:#{@tag_name}:#{tag}"
       end
       return {} if my_tags == []
-      users = redis.sunion *my_tags
+      users = redis.sunion(*my_tags)
       users.delete @objekt.id.to_s
       weights = {}
       users.each do |user|
@@ -133,7 +145,7 @@ module Dank
         "dank:sets:#{Dank.app_name}:#{taggable_name}:#{user}"
       end
       return {} if my_user_keys == []
-      tags = Dank.redis.sunion *my_user_keys
+      tags = Dank.redis.sunion(*my_user_keys)
       tags.delete tag.to_s
       weights = {}
       tags.each do |t|
@@ -264,6 +276,10 @@ module Dank
 
         define_singleton_method :"#{name}_distance" do |tag1, tag2|
           tag_lib.tag_distance tag1, tag2
+        end
+
+        define_singleton_method :"ordered_#{name}s" do |limit=10|
+          Dank::Tags.ordered_tags limit
         end
 
         define_singleton_method :"__dank_tag_name" do
