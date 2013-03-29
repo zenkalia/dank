@@ -99,9 +99,9 @@ module Dank
                     "dank:sets:#{Dank.app_name}:#{tag_name}:#{tag2}"
     end
 
-    def self.ordered_tags(limit=10)
+    def self.ordered_tags(tag_name, limit=10)
       ret = []
-      tags = Dank.redis.keys('dank:sets:hate:genre:*')
+      tags = Dank.redis.keys("dank:sets:hate:#{tag_name}:*")
       tags.each do |tag|
         ret << [tag.split(':').last, Dank.redis.smembers(tag).count]
       end
@@ -279,7 +279,7 @@ module Dank
         end
 
         define_singleton_method :"ordered_#{name}s" do |limit=10|
-          Dank::Tags.ordered_tags limit
+          Dank::Tags.ordered_tags @__tag_name, limit
         end
 
         define_singleton_method :"__dank_tag_name" do
