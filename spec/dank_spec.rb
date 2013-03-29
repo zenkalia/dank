@@ -122,7 +122,7 @@ describe 'Dank' do
           user.genres.should == ['rock', 'rap', 'instrumental_metal', 'screamo']
           user.genres = ['rock', 'rap', 'instrumental_metal', 'ambient']
           user.genres.should == ['rock', 'rap', 'instrumental_metal', 'ambient']
-          klass.ordered_genres(2).should == [["rap", 2], ["country", 1]]
+          klass.ordered_genres(2)[0].should == ["rap", 2]
           klass.ordered_genres.count.should <= 10
         end
       end
