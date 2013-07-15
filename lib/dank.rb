@@ -51,8 +51,7 @@ module Dank
   end
 
   def self.tags
-    count = redis.zcount('dank:tags', '-inf', '+inf')
-    redis.zrange('dank:tags', 0, count).reduce([]) do |memo, tag|
+    redis.zrange('dank:tags', 0, -1).reduce([]) do |memo, tag|
       memo << tag[0..-2] if tag[-1] === '+'
       memo
     end
