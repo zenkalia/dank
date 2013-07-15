@@ -24,6 +24,10 @@ describe 'Dank' do
         end
       end
 
+      describe 'we can get all the tags' do
+        subject { Dank.tags }
+        its(:count) { should eq 3 }
+      end
       describe 'we can remove tags too' do
         before do
           Dank.remove 'traps'

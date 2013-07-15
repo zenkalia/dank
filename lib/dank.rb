@@ -50,6 +50,14 @@ module Dank
     return results
   end
 
+  def self.tags
+    count = redis.zcount('dank:tags', '-inf', '+inf')
+    redis.zrange('dank:tags', 0, count).reduce([]) do |memo, tag|
+      memo << tag[0..-2] if tag[-1] === '+'
+      memo
+    end
+  end
+
   def self.add(tag)
     tag = sanitize tag
     tag.length.downto(1).each do |l|
