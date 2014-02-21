@@ -7,6 +7,8 @@ A Redis-backed gem for tagging objects, using those tag relations and autocomple
 
 Autocomplete largely coming from this: <http://antirez.com/post/autocomplete-with-redis.html>
 
+Tested against `1.9.3`, `2.0.0` and `2.1.0`.
+
 ## Benchmarking?  Performance?
 ```
 rake db:test_seed[users,tags,data_points]
